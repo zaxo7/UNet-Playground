@@ -110,8 +110,8 @@ def get_do_unet_debug():
     up3 = Conv2D_BN(up3, np_filters, kernel_size=(3, 3))  # 102x102
     up3 = Conv2D_BN(up3, np_filters, kernel_size=(3, 3))  # 100x100
 
-    out_mask = tf.keras.layers.Conv2D(1, (1, 1), activation='softmax', name='mask')(up3)
-    out_edge = tf.keras.layers.Conv2D(1, (1, 1), activation='softmax', name='edge')(up3)
+    out_mask = tf.keras.layers.Conv2D(1, (1, 1), activation='sigmoid', name='mask')(up3)
+    out_edge = tf.keras.layers.Conv2D(1, (1, 1), activation='sigmoid', name='edge')(up3)
 
     model = tf.keras.models.Model(inputs=inputs, outputs=(out_mask, out_edge, pool1, pool2, pool3, down4, up1, up2, up3))
 
