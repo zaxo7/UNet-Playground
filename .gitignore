@@ -1,3 +1,16 @@
 .vscode/*
 scripts/__pycache__/*
 
+models/C_all.h5
+models/C_best.h5
+models/D_all.h5
+models/D_best.h5
+models/E_all.h5
+models/E_best.h5
+models/F_100_all.h5
+models/F_100_best.h5
+models/test_tversky_loss_best.h5
+models/test_tversky_loss_log.json
+models/test_tversky_loss_all.h5
+models/G_200_all.h5
+models/G_200_best.h5
