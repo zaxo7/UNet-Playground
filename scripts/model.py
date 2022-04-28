@@ -1,3 +1,4 @@
+from numpy import full
 import tensorflow as tf
 
 import data
@@ -18,7 +19,7 @@ def UpConv2D_BN(model, filters, kernel_size=(2, 2), activation='relu', padding='
     return x
 
 
-def get_do_unet():
+def get_do_unet(compile = True):
     np_filters = 32
 
     inputs = tf.keras.layers.Input((188, 188, 3))
@@ -65,6 +66,13 @@ def get_do_unet():
     
 
     model = tf.keras.models.Model(inputs=inputs, outputs=(out_mask, out_edge))
+    
+    if compile:
+        model.compile(optimizer="adam",
+             loss="binary_crossentropy",
+             loss_weights=[0.3, 0.7],
+             metrics={'mask': [mean_iou, dsc, tversky], 
+                      'edge': [mean_iou, dsc, tversky]})
 
     return model
 
@@ -163,6 +171,48 @@ def generate_test_dataset(img_files):
                                                 (mask_chips, edge_chips))
                                                 )
     
+    
+def predictFullImage(model,
+                    imgs,
+                    padding=100,
+                    input_size=188,
+                    output_size=100,
+                    normalize_input = False,
+                    normalize_output = False):
+    
+    if normalize_input:
+        imgs = data.clahe_images(imgs)
+    
+    images = imgs
+    masks = []
+    edges = []
+    
+    for img in imgs:
+        slices, img_sizes = data.slice_images([img],
+                padding=padding,
+                input_size=input_size,
+                output_size=output_size)
+        
+          
+        prediction = model.predict(slices)
+        
+        mask_slices = prediction[0]
+        edge_slices = prediction[1]
+        
+        mask_slices_2d = mask_slices.reshape((img_sizes[0][0], img_sizes[0][1], 100, 100, 1))
+        edge_slices_2d = edge_slices.reshape((img_sizes[0][0], img_sizes[0][1], 100, 100, 1))
+        
+        full_mask = data.concat_slices(mask_slices_2d)
+        full_edge = data.concat_slices(edge_slices_2d)
+        
+        if normalize_output:
+            full_mask = (full_mask > 0.5) * 1
+            full_edge = (full_edge > 0.5) * 1
+        
+        masks += [full_mask]
+        edges += [full_edge]
+        
+    return (images, masks, edges)
     
     
 def get_callbacks(name):

@@ -5,6 +5,9 @@ import json
 import cv2
 import numpy as np
 from tensorflow import keras
+from PIL import Image
+
+import matplotlib.pyplot as plt
 
 
 def load_image_list(img_files):
@@ -85,6 +88,7 @@ def load_markup(markup_files, imgs, edge_size=2):
     return mask, edge
 
 
+# adds padding from (top, bottom), (right, left)
 def preprocess_data(imgs, mask, edge, padding=200):
     imgs = [np.pad(img, ((padding, padding),
                          (padding, padding), (0, 0)), mode='constant') for img in imgs]
@@ -95,6 +99,12 @@ def preprocess_data(imgs, mask, edge, padding=200):
 
     return imgs, mask, edge
 
+def preprocess_data_na(imgs, padding=200):
+    imgs = [np.pad(img, ((padding, padding),
+                         (padding, padding), (0, 0)), mode='constant') for img in imgs]
+
+    return imgs
+
 
 def load_data(img_list, edge_size=2, padding=200):
     imgs = load_image_list(img_list)
@@ -104,6 +114,12 @@ def load_data(img_list, edge_size=2, padding=200):
     mask, edge = load_markup(markup_list, imgs, edge_size=edge_size)
 
     return preprocess_data(imgs, mask, edge, padding=padding)
+
+def load_data_na(img_list, edge_size=2, padding=200):
+    imgs = load_image_list(img_list)
+    imgs = clahe_images(imgs)
+
+    return preprocess_data_na(imgs, padding=padding)
 
 
 def aug_lum(image, factor=None):
@@ -139,8 +155,16 @@ def aug_img(image):
     hsv[..., 2][hsv[..., 2] > 255] = 255
 
     hsv = hsv.astype(np.uint8)
-
-    return cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+    
+    img = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+    
+    #check if the image is fully black don't return it
+    pimg = Image.fromarray(img , 'RGB')
+    # image all black or all white
+    if sum(pimg.convert("L").getextrema()) in (0, 2):
+        return aug_img(image)
+    else:
+        return img
 
 
 def train_generator(imgs, mask, edge,
@@ -215,10 +239,12 @@ def train_generator(imgs, mask, edge,
             # randomly luminosity augment
             temp_chip = aug_img(temp_chip)
 
-            # rescale the image
+            # rescale the image // normalisation to [-1,1] range
             temp_chip = temp_chip.astype(np.float32) * 2
             temp_chip /= 255
             temp_chip -= 1
+            
+            
 
             # later on ... randomly adjust colours
             yield temp_chip, ((temp_mask > 0).astype(float)[..., np.newaxis], 
@@ -273,3 +299,90 @@ def test_chips(imgs, mask,
         return img_chips, mask_chips, edge_chips
 
     return img_chips, mask_chips
+
+
+def slice_images(imgs,
+               padding=200,
+               input_size=188,
+               output_size=100):
+    img_chips = []
+    img_sizes = []
+
+    center_offset = padding + (output_size / 2)
+    for i, _ in enumerate(imgs):
+        img_sizes += [(len(np.arange(center_offset, imgs[i].shape[0] - input_size / 2, output_size)), len(np.arange(center_offset, imgs[i].shape[1] - input_size / 2, output_size)))]
+        for x in np.arange(center_offset, imgs[i].shape[0] - input_size / 2, output_size):
+            for y in np.arange(center_offset, imgs[i].shape[1] - input_size / 2, output_size):
+                chip_x_l = int(x - (input_size / 2))
+                chip_x_r = int(x + (input_size / 2))
+                chip_y_l = int(y - (input_size / 2))
+                chip_y_r = int(y + (input_size / 2))
+
+
+                temp_chip = imgs[i][chip_x_l:chip_x_r, chip_y_l:chip_y_r]
+               
+
+                temp_chip = temp_chip.astype(np.float32) * 2
+                temp_chip /= 255
+                temp_chip -= 1
+
+                img_chips += [temp_chip]
+                
+    img_chips = np.array(img_chips)
+
+
+    return img_chips, img_sizes
+
+
+def concat_slices(im_slices_2d):
+    return cv2.vconcat([cv2.hconcat(im_list_h) for im_list_h in im_slices_2d[:,:,:,:,:]])
+
+        
+        
+def plot_ime(imgs,
+             masks,
+             edges,
+             lines = 2,
+             columns = 2,
+             figSize = (15,10),
+             threshold = 0,
+             prefix = "predicted"):
+    
+    for i in np.arange(len(imgs)):
+        image = imgs[i]
+        mask = masks[i]
+        edge = edges[i]        
+        
+        fig = plt.figure(figsize=figSize, dpi=80)
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        fig_num = 1
+        ax = fig.add_subplot(lines, columns, fig_num)
+        ax.set_title(f"{prefix} image {i}")
+        ax.imshow(image)
+        fig_num = fig_num + 1
+        ax = fig.add_subplot(lines, columns, fig_num)
+        ax.set_title(f"{prefix} mask {i}")
+        ax.imshow(mask)
+        fig_num = fig_num + 1
+        ax = fig.add_subplot(lines, columns, fig_num)
+        ax.set_title(f"{prefix} edge mask {i}")
+        ax.imshow(edge)
+        fig_num = fig_num + 1
+        ax = fig.add_subplot(lines, columns, fig_num)
+        ax.set_title(f"{prefix} substraction {i}")
+        ax.imshow((mask - edge) > threshold)
+        
+
+#function to plot an array of images of shape (width, height, n_images)       
+def picshow(img, title):
+    num = img.shape[2]
+    imgs_per_line = 4
+    ax = num//imgs_per_line + 1
+    ay = imgs_per_line
+    fig =plt.figure(figsize=(30, num//imgs_per_line * 10))
+    fig.subplots_adjust(hspace=0.1, wspace=0.1)
+    for i in range(1,num + 1):
+        sub = fig.add_subplot(ax,ay,i)
+        sub.set_title(f"{title} {i}")
+        sub.imshow(img[:-1,:-1,i - 1])
+    plt.show()
