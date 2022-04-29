@@ -71,8 +71,8 @@ def get_do_unet(compile = True):
         model.compile(optimizer="adam",
              loss="binary_crossentropy",
              loss_weights=[0.3, 0.7],
-             metrics={'mask': [mean_iou, dsc, tversky], 
-                      'edge': [mean_iou, dsc, tversky]})
+             metrics={'mask': [mean_iou, dsc, tversky, 'acc'], 
+                      'edge': [mean_iou, dsc, tversky, 'acc']})
 
     return model
 
@@ -254,10 +254,29 @@ def tversky(y_true, y_pred):
     false_pos = tf.reduce_sum((1 - y_true_pos) * y_pred_pos)
     return (true_pos + smooth) / (true_pos + alpha * false_neg + (1 - alpha) * false_pos + smooth)
 
-
 @tf.function
 def tversky_loss(y_true, y_pred):
     return 1 - tversky(y_true, y_pred)
+
+# in this funciton i am adding the binarisation of results
+@tf.function
+def tversky_b(y_true, y_pred):
+    y_pred = (y_pred > 0.5)
+    y_pred = tf.cast(y_pred, tf.float32)
+    alpha = 0.7
+    smooth = 1.0
+    y_true_pos = tf.reshape(y_true, [-1])
+    y_pred_pos = tf.reshape(y_pred, [-1])
+    true_pos = tf.reduce_sum(y_true_pos * y_pred_pos)
+    false_neg = tf.reduce_sum(y_true_pos * (1 - y_pred_pos))
+    false_pos = tf.reduce_sum((1 - y_true_pos) * y_pred_pos)
+    return (true_pos + smooth) / (true_pos + alpha * false_neg + (1 - alpha) * false_pos + smooth)
+
+@tf.function
+def tversky_loss_b(y_true, y_pred):
+    return 1 - tversky(y_true, y_pred)
+
+
 
 
 @tf.function
