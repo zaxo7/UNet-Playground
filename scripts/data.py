@@ -346,9 +346,15 @@ def plot_ime(imgs,
              columns = 2,
              figSize = (15,10),
              threshold = 0,
-             prefix = "predicted"):
+             prefix = "predicted",
+             max_plots = 20):
     
-    for i in np.arange(len(imgs)):
+    if max_plots > len(imgs):
+        max = len(imgs)
+    else:
+        max = max_plots
+    
+    for i in np.arange(max):
         image = imgs[i]
         mask = masks[i]
         edge = edges[i]        
@@ -386,3 +392,11 @@ def picshow(img, title):
         sub.set_title(f"{title} {i}")
         sub.imshow(img[:-1,:-1,i - 1])
     plt.show()
+    
+    
+def scaleBetween(data ,scaledMin, scaledMax):
+    max = data.max()
+    min = data.min()
+    res = (scaledMax-scaledMin)*(data-min)/(max-min)+scaledMin
+    return res
+  
