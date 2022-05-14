@@ -1,5 +1,6 @@
 from numpy import full
 import tensorflow as tf
+import numpy as np
 
 import data
 
@@ -129,6 +130,13 @@ def get_do_unet_debug():
 
 def generate_train_dataset(img_files):
         imgs, mask, edge = data.load_data(img_files)
+        
+        print(f"mask :  {np.unique(mask[0], return_counts=True)}")
+        print(f"edge :  {np.unique(edge[0], return_counts=True)}")
+        
+        print(f"mask :  {mask[0].shape}")
+        print(f"edge :  {edge[0].shape}")
+        print(f"img :  {imgs[0].shape}")
 
         def train_gen():
             return data.train_generator(imgs, mask,
@@ -139,9 +147,71 @@ def generate_train_dataset(img_files):
 
 
         return train_gen()
+    
+def generate_train_dataset3(img_files, mask_files, edge_files):
+        imgs = data.load_data_na(img_files, RGB=True, clahe=True)
+        mask = data.load_data_na(mask_files)
+        edge = data.load_data_na(edge_files)
+        
+
+        print(f"mask :  {np.unique(mask[0], return_counts=True)}")
+        print(f"edge :  {np.unique(edge[0], return_counts=True)}")
+        #print(f"img :  {np.unique(imgs[0], return_counts=True)}")
+        
+        print(f"mask :  {mask[0].shape}")
+        print(f"edge :  {edge[0].shape}")
+        print(f"img :  {imgs[0].shape}")
+
+
+        def train_gen():
+            return data.train_generator(imgs, mask,
+                                        edge=edge,
+                                        padding=100,
+                                        input_size=188,
+                                        output_size=100)
+
+
+        return train_gen()
+    
+    
+def generate_train_dataset3_tf(img_files, mask_files, edge_files):
+        imgs = data.load_data_na(img_files, RGB=True, clahe=True)
+        mask = data.load_data_na(mask_files)
+        edge = data.load_data_na(edge_files)
+        
+
+        print(f"mask :  {np.unique(mask[0], return_counts=True)}")
+        print(f"edge :  {np.unique(edge[0], return_counts=True)}")
+        #print(f"img :  {np.unique(imgs[0], return_counts=True)}")
+        
+        print(f"mask :  {mask[0].shape}")
+        print(f"edge :  {edge[0].shape}")
+        print(f"img :  {imgs[0].shape}")
+
+
+        def train_gen():
+            return data.train_generator(imgs, mask,
+                                        edge=edge,
+                                        padding=100,
+                                        input_size=188,
+                                        output_size=100)
+            
+        return tf.data.Dataset.from_generator(train_gen,
+                                              (tf.float64, ((tf.float64), (tf.float64))),
+                                              ((188, 188, 3), ((100, 100, 1), (100, 100, 1)))
+                                             )
+        
+        
         
 def generate_train_dataset_tf(img_files):
         imgs, mask, edge = data.load_data(img_files)
+        
+        print(f"mask :  {np.unique(mask[0], return_counts=True)}")
+        print(f"edge :  {np.unique(edge[0], return_counts=True)}")
+        
+        print(f"mask :  {mask[0].shape}")
+        print(f"edge :  {edge[0].shape}")
+        print(f"img :  {imgs[0].shape}")
 
         def train_gen():
             return data.train_generator(imgs, mask,

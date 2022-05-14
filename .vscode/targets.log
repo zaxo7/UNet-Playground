@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Fri Apr 29 14:57:11 2022
+# Make data base, printed on Sat May 14 15:41:37 2022
 
 # Variables
 
@@ -51,7 +51,7 @@ VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupp
 # environment
 _ = /usr/share/code/code
 # environment
-JOURNAL_STREAM = 8:55161
+JOURNAL_STREAM = 8:60948
 # environment
 XDG_CONFIG_DIRS = /etc/xdg/xdg-ubuntu:/etc/xdg
 # makefile
@@ -73,9 +73,9 @@ LESS_TERMCAP_se = [0m
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
-MANAGERPID = 2194
+MANAGERPID = 2273
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-5224d059-1d22-4587-be5e-c7fe1cad88f1.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-6953d6e0-7270-40e5-9d76-ac0e8c21b675.sock
 # environment
 LC_NAME = en_GB.UTF-8
 # environment
@@ -91,7 +91,7 @@ GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
 # environment
 GJS_DEBUG_OUTPUT = stderr
 # environment
-SESSION_MANAGER = local/zx-d:@/tmp/.ICE-unix/2459,unix/zx-d:/tmp/.ICE-unix/2459
+SESSION_MANAGER = local/zx-d:@/tmp/.ICE-unix/2542,unix/zx-d:/tmp/.ICE-unix/2542
 # environment
 XDG_RUNTIME_DIR = /run/user/1000
 # environment
@@ -101,7 +101,7 @@ VSCODE_LOG_STACK = false
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # environment
-INVOCATION_ID = 02f3aedde3c945a0a3b79bb6b17d18da
+INVOCATION_ID = db309a5cec2c4401a18a76d8295669cf
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
 # environment
@@ -111,7 +111,7 @@ XDG_SESSION_DESKTOP = ubuntu
 # environment
 SSH_AUTH_SOCK = /run/user/1000/keyring/ssh
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 7367
+GIO_LAUNCHED_DESKTOP_FILE_PID = 8155
 # automatic
 %F = $(notdir $%)
 # environment
@@ -125,7 +125,7 @@ PWD = /home/zaxo7/WorkSpace/DEEP LEARNING/MY-U-NET
 # default
 .LOADED := 
 # environment
-SSH_AGENT_PID = 2395
+SSH_AGENT_PID = 2478
 # environment
 ORIGINAL_XDG_CURRENT_DESKTOP = ubuntu:GNOME
 # environment
@@ -241,7 +241,7 @@ LC_ADDRESS = en_GB.UTF-8
 # environment
 LANG = C
 # environment
-VSCODE_PID = 7367
+VSCODE_PID = 8155
 # variable set hash-table stats:
 # Load=115/1024=11%, Rehash=0, Collisions=19/137=14%
 
@@ -251,9 +251,9 @@ VSCODE_PID = 7367
 
 # Directories
 
-# . (device 2054, inode 1877201): 13 files, no impossibilities.
+# . (device 2054, inode 1884234): 17 files, no impossibilities.
 
-# 13 files, no impossibilities in 1 directories.
+# 17 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -282,10 +282,10 @@ makefile:
 #  File has been updated.
 #  Failed to be updated.
 
- 
 # Not a target:
 .DEFAULT:
 #  Implicit rule search has not been done.
+ 
 #  Modification time never checked.
 #  File has not been updated.
 
@@ -304,12 +304,12 @@ GNUmakefile:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 21 / storage = 212 B / avg = 10 B
-# current buf: size = 8162 B / used = 212 B / count = 21 / avg = 10 B
+# strcache buffers: 1 (0) / strings = 25 / storage = 260 B / avg = 10 B
+# current buf: size = 8162 B / used = 260 B / count = 25 / avg = 10 B
 
-# strcache performance: lookups = 24 / hit rate = 12%
+# strcache performance: lookups = 28 / hit rate = 10%
 # hash-table stats:
-# Load=21/8192=0%, Rehash=0, Collisions=1/24=4%
-# Finished Make data base on Fri Apr 29 14:57:11 2022
+# Load=25/8192=0%, Rehash=0, Collisions=1/28=4%
+# Finished Make data base on Sat May 14 15:41:37 2022
 
  

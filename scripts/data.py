@@ -10,10 +10,17 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 
-def load_image_list(img_files):
+def load_image_list(img_files, RGB=False):
     imgs = []
     for image_file in img_files:
-        imgs += [cv2.imread(image_file)]
+        if RGB:
+            img = cv2.imread(image_file)
+        else:
+            im_gray = cv2.imread(image_file, cv2.IMREAD_GRAYSCALE)
+            thresh = 127
+            img = cv2.threshold(im_gray, thresh, 255, cv2.THRESH_BINARY)[1]
+            
+        imgs += [img]
     return imgs
 
 
@@ -99,15 +106,19 @@ def preprocess_data(imgs, mask, edge, padding=200):
 
     return imgs, mask, edge
 
-def preprocess_data_na(imgs, padding=200):
-    imgs = [np.pad(img, ((padding, padding),
+def preprocess_data_na(imgs, padding=200, RGB=False):
+    if RGB:
+        imgs = [np.pad(img, ((padding, padding),
                          (padding, padding), (0, 0)), mode='constant') for img in imgs]
+    else:
+        imgs = [np.pad(img, ((padding, padding),
+                         (padding, padding)), mode='constant') for img in imgs]
 
     return imgs
 
 
 def load_data(img_list, edge_size=2, padding=200):
-    imgs = load_image_list(img_list)
+    imgs = load_image_list(img_list, RGB=True)
     imgs = clahe_images(imgs)
 
     markup_list = [f.split('.')[0] + '.json' for f in img_list]
@@ -115,11 +126,12 @@ def load_data(img_list, edge_size=2, padding=200):
 
     return preprocess_data(imgs, mask, edge, padding=padding)
 
-def load_data_na(img_list, edge_size=2, padding=200):
-    imgs = load_image_list(img_list)
-    imgs = clahe_images(imgs)
+def load_data_na(img_list, edge_size=2, padding=200, RGB=False, clahe=False):
+    imgs = load_image_list(img_list, RGB=RGB)
+    if clahe:
+        imgs = clahe_images(imgs)
 
-    return preprocess_data_na(imgs, padding=padding)
+    return preprocess_data_na(imgs, padding=padding, RGB=RGB)
 
 
 def aug_lum(image, factor=None):
