@@ -242,6 +242,52 @@ def generate_test_dataset(img_files):
                                                 )
     
     
+def generate_test_dataset_tf(img_files):
+    imgs, mask, edge = data.load_data(img_files)
+
+    img_chips, mask_chips, edge_chips = data.test_chips(imgs, mask,
+                                                        edge=edge,
+                                                        padding=100,
+                                                        input_size=188,
+                                                        output_size=100)
+    
+
+    return tf.data.Dataset.from_tensor_slices((img_chips,
+                                                (mask_chips, edge_chips))
+                                                )
+    
+
+def generate_test_dataset3(img_files, mask_files, edge_files):
+    imgs = data.load_data_na(img_files, RGB=True, clahe=True)
+    mask = data.load_data_na(mask_files)
+    edge = data.load_data_na(edge_files)
+
+    img_chips, mask_chips, edge_chips = data.test_chips(imgs, mask,
+                                                        edge=edge,
+                                                        padding=100,
+                                                        input_size=188,
+                                                        output_size=100)
+    
+    return img_chips, mask_chips, edge_chips
+
+    
+def generate_test_dataset3_tf(img_files, mask_files, edge_files):
+    imgs = data.load_data_na(img_files, RGB=True, clahe=True)
+    mask = data.load_data_na(mask_files)
+    edge = data.load_data_na(edge_files)
+
+    img_chips, mask_chips, edge_chips = data.test_chips(imgs, mask,
+                                                        edge=edge,
+                                                        padding=100,
+                                                        input_size=188,
+                                                        output_size=100)
+    
+
+    return tf.data.Dataset.from_tensor_slices((img_chips,
+                                                (mask_chips, edge_chips))
+                                                )
+    
+    
 def predictFullImage(model,
                     imgs,
                     padding=100,
