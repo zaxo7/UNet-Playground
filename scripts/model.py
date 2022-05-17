@@ -258,10 +258,11 @@ def generate_test_dataset_tf(img_files):
     
 
 def generate_test_dataset3(img_files, mask_files, edge_files):
-    imgs = data.load_data_na(img_files, RGB=True, clahe=True)
-    mask = data.load_data_na(mask_files)
-    edge = data.load_data_na(edge_files)
-
+    #imgs = data.load_data_na(img_files, RGB=True, clahe=True)
+    #mask = data.load_data_na(mask_files)
+    #edge = data.load_data_na(edge_files)
+    (imgs, mask, edge) = data.load_data3(img_files, mask_files, edge_files)
+    
     img_chips, mask_chips, edge_chips = data.test_chips(imgs, mask,
                                                         edge=edge,
                                                         padding=100,
@@ -270,6 +271,37 @@ def generate_test_dataset3(img_files, mask_files, edge_files):
     
     return img_chips, mask_chips, edge_chips
 
+def generate_test_dataset3_(img_files, mask_files, edge_files):
+    imgs, mask, edge = data.load_data3(img_files, mask_files, edge_files)
+
+    imgs_chunks = data.chunks(imgs)
+    mask_chunks = data.chunks(mask)
+    edge_chunks = data.chunks(edge)
+
+    img_chips = None
+    mask_chips = None
+    edge_chips = None
+
+    for i in np.arange(len(imgs_chunks)):
+        img_chip, mask_chip, edge_chip = data.test_chips(imgs_chunks[i], mask_chunks[i], edge=edge_chunks[i], padding=100, input_size=188, output_size=100)
+        
+        print(img_chip.shape)
+        print(mask_chip.shape)
+        print(edge_chip.shape)
+        
+        if i == 0:
+            img_chips = img_chip
+            mask_chips = mask_chip
+            edge_chips = edge_chip
+        else:
+            img_chips = np.concatenate((img_chips, img_chip), axis=0)
+            mask_chips = np.concatenate((mask_chips, mask_chip), axis=0)
+            edge_chips = np.concatenate((edge_chips, edge_chip), axis=0)
+        
+        print(f"chunk num {i} sliced succesfuly")
+    
+    return img_chips, mask_chips, edge_chips
+    
     
 def generate_test_dataset3_tf(img_files, mask_files, edge_files):
     imgs = data.load_data_na(img_files, RGB=True, clahe=True)

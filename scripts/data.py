@@ -16,9 +16,9 @@ def load_image_list(img_files, RGB=False):
         if RGB:
             img = cv2.imread(image_file)
         else:
-            im_gray = cv2.imread(image_file, cv2.IMREAD_GRAYSCALE)
+            img = cv2.imread(image_file, cv2.IMREAD_GRAYSCALE)
             thresh = 127
-            img = cv2.threshold(im_gray, thresh, 255, cv2.THRESH_BINARY)[1]
+            img = cv2.threshold(img, thresh, 255, cv2.THRESH_BINARY)[1]
             
         imgs += [img]
     return imgs
@@ -123,15 +123,32 @@ def load_data(img_list, edge_size=2, padding=200):
 
     markup_list = [f.split('.')[0] + '.json' for f in img_list]
     mask, edge = load_markup(markup_list, imgs, edge_size=edge_size)
+    
+    print("load_data before preprocessing:")
+    print(f"image: {imgs[0].shape}\nmask : {mask[0].shape}\nedge : {edge[0].shape}")
+    
+    imgs, mask, edge = preprocess_data(imgs, mask, edge, padding=padding)
+    
+    print("load_data after preprocessing:")
+    print(f"image: {imgs[0].shape}\nmask : {mask[0].shape}\nedge : {edge[0].shape}")
 
+    return imgs, mask, edge
+
+def load_data3(img_files, mask_files, edge_files, edge_size=2, padding=200):
+    imgs = load_data_na(img_files, RGB=True, clahe=True)
+    mask = load_data_na(mask_files)
+    edge = load_data_na(edge_files)
+    
     return preprocess_data(imgs, mask, edge, padding=padding)
 
 def load_data_na(img_list, edge_size=2, padding=200, RGB=False, clahe=False):
-    imgs = load_image_list(img_list, RGB=RGB)
+    img_list = load_image_list(img_list, RGB=RGB)
     if clahe:
-        imgs = clahe_images(imgs)
+        img_list = clahe_images(img_list)
+        
+    img_list = preprocess_data_na(img_list, padding=padding, RGB=RGB)
 
-    return preprocess_data_na(imgs, padding=padding, RGB=RGB)
+    return img_list
 
 
 def aug_lum(image, factor=None):
@@ -292,6 +309,14 @@ def test_chips(imgs, mask,
                 temp_mask = mask[i][mask_x_l:mask_x_r, mask_y_l:mask_y_r]
                 if edge is not None:
                     temp_edge = edge[i][mask_x_l:mask_x_r, mask_y_l:mask_y_r]
+                    
+                    
+                if temp_mask.shape != (100, 100, 1) and (temp_mask.shape != (100, 100)):
+                    print("test_chips:")
+                    print(f"img_chip shape : {temp_chip.shape}")
+                    print(f"mask_chip shape : {temp_mask.shape}")
+                    print(f"edge_chip shape : {temp_edge.shape}")
+                    return temp_chip, temp_mask, temp_edge
 
                 temp_chip = temp_chip.astype(np.float32) * 2
                 temp_chip /= 255
@@ -306,6 +331,10 @@ def test_chips(imgs, mask,
     mask_chips = np.array(mask_chips)
     if edge is not None:
         edge_chips = np.array(edge_chips)
+    print("test_chips:")
+    print(f"img_chips shape : {img_chips.shape}")
+    print(f"mask_chips shape : {mask_chips.shape}")
+    print(f"edge_chips shape : {edge_chips.shape}")
 
     if edge is not None:
         return img_chips, mask_chips, edge_chips
@@ -412,3 +441,9 @@ def scaleBetween(data ,scaledMin, scaledMax):
     res = (scaledMax-scaledMin)*(data-min)/(max-min)+scaledMin
     return res
   
+def chunks(l, n = None):
+    if n == None:
+        n = len(l) // 10
+        
+    n = max(1, n)
+    return [l[i:i+n] for i in range(0, len(l), n)]
