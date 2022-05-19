@@ -135,21 +135,19 @@ def load_data(img_list, edge_size=2, padding=200):
     return imgs, mask, edge
 
 def load_data3(img_files, mask_files, edge_files, edge_size=2, padding=200, preprocess=True):
-    imgs = load_data_na(img_files, RGB=True, clahe=True)
-    mask = load_data_na(mask_files)
-    edge = load_data_na(edge_files)
-    
-    if preprocess:
-        imgs, mask, edge = preprocess_data(imgs, mask, edge, padding=padding)
+    imgs = load_data_na(img_files, RGB=True, clahe=True, preprocess=preprocess)
+    mask = load_data_na(mask_files, preprocess=preprocess)
+    edge = load_data_na(edge_files, preprocess=preprocess)
     
     return imgs, mask, edge
 
-def load_data_na(img_list, edge_size=2, padding=200, RGB=False, clahe=False):
+def load_data_na(img_list, edge_size=2, padding=200, RGB=False, clahe=False, preprocess=True):
     img_list = load_image_list(img_list, RGB=RGB)
     if clahe:
         img_list = clahe_images(img_list)
-        
-    img_list = preprocess_data_na(img_list, padding=padding, RGB=RGB)
+    
+    if preprocess:
+        img_list = preprocess_data_na(img_list, padding=padding, RGB=RGB)
 
     return img_list
 
