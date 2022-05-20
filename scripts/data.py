@@ -124,13 +124,13 @@ def load_data(img_list, edge_size=2, padding=200):
     markup_list = [f.split('.')[0] + '.json' for f in img_list]
     mask, edge = load_markup(markup_list, imgs, edge_size=edge_size)
     
-    print("load_data before preprocessing:")
-    print(f"image: {imgs[0].shape}\nmask : {mask[0].shape}\nedge : {edge[0].shape}")
+    #print("load_data before preprocessing:")
+    #print(f"image: {imgs[0].shape}\nmask : {mask[0].shape}\nedge : {edge[0].shape}")
     
     imgs, mask, edge = preprocess_data(imgs, mask, edge, padding=padding)
     
-    print("load_data after preprocessing:")
-    print(f"image: {imgs[0].shape}\nmask : {mask[0].shape}\nedge : {edge[0].shape}")
+    #print("load_data after preprocessing:")
+    #print(f"image: {imgs[0].shape}\nmask : {mask[0].shape}\nedge : {edge[0].shape}")
 
     return imgs, mask, edge
 
@@ -281,8 +281,55 @@ def train_generator(imgs, mask, edge,
                               (temp_edge > 0).astype(float)[..., np.newaxis])
             break
 
-
 def test_chips(imgs, mask,
+               edge=None,
+               padding=200,
+               input_size=380,
+               output_size=196):
+    img_chips = []
+    mask_chips = []
+    if edge is not None:
+        edge_chips = []
+
+    center_offset = padding + (output_size / 2)
+    for i, _ in enumerate(imgs):
+        for x in np.arange(center_offset, imgs[i].shape[0] - input_size / 2, output_size):
+            for y in np.arange(center_offset, imgs[i].shape[1] - input_size / 2, output_size):
+                chip_x_l = int(x - (input_size / 2))
+                chip_x_r = int(x + (input_size / 2))
+                chip_y_l = int(y - (input_size / 2))
+                chip_y_r = int(y + (input_size / 2))
+
+                mask_x_l = int(x - (output_size / 2))
+                mask_x_r = int(x + (output_size / 2))
+                mask_y_l = int(y - (output_size / 2))
+                mask_y_r = int(y + (output_size / 2))
+
+                temp_chip = imgs[i][chip_x_l:chip_x_r, chip_y_l:chip_y_r]
+                temp_mask = mask[i][mask_x_l:mask_x_r, mask_y_l:mask_y_r]
+                if edge is not None:
+                    temp_edge = edge[i][mask_x_l:mask_x_r, mask_y_l:mask_y_r]
+
+                temp_chip = temp_chip.astype(np.float32) * 2
+                temp_chip /= 255
+                temp_chip -= 1
+
+                img_chips += [temp_chip]
+                mask_chips += [(temp_mask > 0).astype(float)[..., np.newaxis]]
+                if edge is not None:
+                    edge_chips += [(temp_edge > 0).astype(float)[..., np.newaxis]]
+
+    img_chips = np.array(img_chips)
+    mask_chips = np.array(mask_chips)
+    if edge is not None:
+        edge_chips = np.array(edge_chips)
+
+    if edge is not None:
+        return img_chips, mask_chips, edge_chips
+
+    return img_chips, mask_chips
+
+def test_chips3(imgs, mask,
                edge=None,
                padding=200,
                input_size=380,

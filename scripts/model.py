@@ -206,12 +206,12 @@ def generate_train_dataset3_tf(img_files, mask_files, edge_files):
 def generate_train_dataset_tf(img_files):
         imgs, mask, edge = data.load_data(img_files)
         
-        print(f"mask :  {np.unique(mask[0], return_counts=True)}")
-        print(f"edge :  {np.unique(edge[0], return_counts=True)}")
-        
-        print(f"mask :  {mask[0].shape}")
-        print(f"edge :  {edge[0].shape}")
-        print(f"img :  {imgs[0].shape}")
+#        print(f"mask :  {np.unique(mask[0], return_counts=True)}")
+#        print(f"edge :  {np.unique(edge[0], return_counts=True)}")
+#        
+#        print(f"mask :  {mask[0].shape}")
+#        print(f"edge :  {edge[0].shape}")
+#        print(f"img :  {imgs[0].shape}")
 
         def train_gen():
             return data.train_generator(imgs, mask,
