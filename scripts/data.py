@@ -2,6 +2,7 @@
 import os
 import json
 
+
 import cv2
 import numpy as np
 from tensorflow import keras
@@ -134,12 +135,17 @@ def load_data(img_list, edge_size=2, padding=200):
 
     return imgs, mask, edge
 
-def load_data3(img_files, mask_files, edge_files, edge_size=2, padding=200, preprocess=True):
+def load_data3(img_files, mask_files, edge_files=None, edge_size=2, padding=200, preprocess=True):
     imgs = load_data_na(img_files, RGB=True, clahe=True, preprocess=preprocess)
     mask = load_data_na(mask_files, preprocess=preprocess)
-    edge = load_data_na(edge_files, preprocess=preprocess)
+    if edge_files is not None:
+        edge = load_data_na(edge_files, preprocess=preprocess)
     
-    return imgs, mask, edge
+    if edge_files is not None:
+        return imgs, mask, edge
+    
+    return imgs, mask
+    
 
 def load_data_na(img_list, edge_size=2, padding=200, RGB=False, clahe=False, preprocess=True):
     img_list = load_image_list(img_list, RGB=RGB)
@@ -168,7 +174,7 @@ def aug_lum(image, factor=None):
     return cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 
 
-def aug_img(image):
+def aug_img(image, calln = 0):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     hsv = hsv.astype(np.float64)
 
@@ -191,8 +197,8 @@ def aug_img(image):
     #check if the image is fully black don't return it
     pimg = Image.fromarray(img , 'RGB')
     # image all black or all white
-    if sum(pimg.convert("L").getextrema()) in (0, 2):
-        return aug_img(image)
+    if (sum(pimg.convert("L").getextrema()) in (0, 2)) and (calln < 4):
+        return aug_img(image, calln = calln + 1)
     else:
         return img
 
@@ -389,6 +395,44 @@ def test_chips3(imgs, mask,
 
     return img_chips, mask_chips
 
+def noisy(noise_typ,image):
+    if noise_typ == "gauss":
+        row,col,ch= image.shape
+        mean = 0
+        var = 0.1
+        sigma = var**0.5
+        gauss = np.random.normal(mean,sigma,(row,col,ch))
+        gauss = gauss.reshape(row,col,ch)
+        noisy = image + gauss
+        return noisy
+    elif noise_typ == "s&p":
+        row,col,ch = image.shape
+        s_vs_p = 0.5
+        amount = 0.004
+        out = np.copy(image)
+        # Salt mode
+        num_salt = np.ceil(amount * image.size * s_vs_p)
+        coords = [np.random.randint(0, i - 1, int(num_salt))
+                for i in image.shape]
+        out[coords] = 1
+
+        # Pepper mode
+        num_pepper = np.ceil(amount* image.size * (1. - s_vs_p))
+        coords = [np.random.randint(0, i - 1, int(num_pepper))
+                for i in image.shape]
+        out[coords] = 0
+        return out
+    elif noise_typ == "poisson":
+        vals = len(np.unique(image))
+        vals = 2 ** np.ceil(np.log2(vals))
+        noisy = np.random.poisson(image * vals) / float(vals)
+        return noisy
+    elif noise_typ =="speckle":
+        row,col,ch = image.shape
+        gauss = np.random.randn(row,col,ch)
+        gauss = gauss.reshape(row,col,ch)        
+        noisy = image + image * gauss
+        return noisy
 
 def slice_images(imgs,
                padding=200,
