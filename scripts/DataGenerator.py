@@ -126,7 +126,8 @@ class DataGenerator(tf.keras.utils.Sequence):
             
             images[i] = image
             masks[i] = mask
-            edges[i] = edge
+            if edges is not None:
+                edges[i] = edge
             
             
             i = i + 1

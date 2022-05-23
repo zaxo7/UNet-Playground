@@ -8,6 +8,7 @@ import numpy as np
 from tensorflow import keras
 from PIL import Image
 from tqdm import tqdm
+import json
 
 
 import matplotlib.pyplot as plt
@@ -436,32 +437,64 @@ def noisy(noise_typ,image, output_type = np.uint8):
         noisy = image + image * gauss
         return noisy.astype(output_type)
     
-def remove_empty_images(image_files, mask_files, edge_files=None, keep_prob = 0):
+def remove_empty_images(image_files, mask_files, edge_files=None, keep_prob = 0, overwrite = False):
     
     new_image_files = []
     new_mask_files = []
     if edge_files is not None:
         new_edge_files = []
 
+    #check the existance of dictionary of empty files
+    dictPath = '/'.join(mask_files[0].split('/')[:-2]) + '/empty_files_dict.json'
+    
+    
+    dictExists = os.path.exists(dictPath)
+    
+    if dictExists:
+        # Opening JSON file
+        with open(dictPath) as fp:
+            # returns JSON object as
+            # a dictionary
+            empty_files_dict = json.load(fp)
+        
+        #integrity check
+        if len(empty_files_dict) != len(mask_files):
+            dictExists = False
+            empty_files_dict = {}
+    else:
+        empty_files_dict = {}
+    
+    
+    
     
     for i in tqdm(range(len(image_files))):
-        image = cv2.imread(image_files[i])
         
         keep = np.random.choice([True, False], p=[keep_prob, 1 - keep_prob])
-        #keep = False
         
-        if (len(np.unique(image)) == 1) and (not keep):
-            #print(f"deleting image {image_files[i]} where the max is {image.max()} unique is {len(np.unique(image))} keep {keep}")
-            del image
-            continue
+        if not dictExists:
+            image = cv2.imread(image_files[i])
+        
+            empty_files_dict[image_files[i]] = (len(np.unique(image)) < 5)
+            
+            if (len(np.unique(image)) < 5) and (not keep):
+                #print(f"deleting image {image_files[i]} where the max is {image.max()} unique is {len(np.unique(image))} keep {keep}")
+                del image
+                continue
+            else:
+                #print(f"keeping image {image_files[i]} where the max is {image.max()} unique is {len(np.unique(image))} keep {keep}")
+                del image
         else:
-            #print(f"keeping image {image_files[i]} where the max is {image.max()} unique is {len(np.unique(image))} keep {keep}")
-            del image
+            if (empty_files_dict[image_files[i]] == True) and (not keep):
+                continue
         
         new_image_files += [image_files[i]]
         new_mask_files += [mask_files[i]]
         if edge_files is not None:
             new_edge_files += [edge_files[i]]
+            
+    if not dictExists:
+        with open(dictPath, "w+") as fp:
+            json.dump(empty_files_dict,fp)
     
     if edge_files is not None:
         return new_image_files, new_mask_files, new_edge_files
