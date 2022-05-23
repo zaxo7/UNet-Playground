@@ -31,6 +31,8 @@ class DataGenerator(tf.keras.utils.Sequence):
         self.shuffle = shuffle
         self.skip_empty = skip_empty
         
+        self.slice = slice
+        
         self.n = len(self.image_files)
     
     def on_epoch_end(self):
@@ -133,13 +135,16 @@ class DataGenerator(tf.keras.utils.Sequence):
             
         
         #we need to slice the images
-        if slice:
+        if self.slice:
             image_files = self.image_files
             mask_files = self.mask_files
             if self.edge_files is not None:
                 edge_files = self.edge_files
-                
-            image_files, mask_files, edge_files = shuffle(image_files, mask_files, edge_files)
+            
+            if self.edge_files is not None:
+                image_files, mask_files, edge_files = shuffle(image_files, mask_files, edge_files)
+            else:
+                image_files, mask_files = shuffle(image_files, mask_files)
             
             images = []
             masks = []
@@ -201,7 +206,7 @@ class DataGenerator(tf.keras.utils.Sequence):
             
         images = np.asarray(images)
         
-        if not slice:
+        if not self.slice:
             masks = np.asarray(masks).astype(np.float32)[..., np.newaxis]
             if self.edge_files is not None:
                 edges = np.asarray(edges).astype(np.float32)[..., np.newaxis]
