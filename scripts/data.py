@@ -395,7 +395,7 @@ def test_chips3(imgs, mask,
 
     return img_chips, mask_chips
 
-def noisy(noise_typ,image):
+def noisy(noise_typ,image, output_type = np.uint8):
     if noise_typ == "gauss":
         row,col,ch= image.shape
         mean = 0
@@ -404,7 +404,7 @@ def noisy(noise_typ,image):
         gauss = np.random.normal(mean,sigma,(row,col,ch))
         gauss = gauss.reshape(row,col,ch)
         noisy = image + gauss
-        return noisy
+        return noisy.astype(output_type)
     elif noise_typ == "s&p":
         row,col,ch = image.shape
         s_vs_p = 0.5
@@ -421,18 +421,50 @@ def noisy(noise_typ,image):
         coords = [np.random.randint(0, i - 1, int(num_pepper))
                 for i in image.shape]
         out[coords] = 0
-        return out
+        return out.astype(output_type)
     elif noise_typ == "poisson":
         vals = len(np.unique(image))
         vals = 2 ** np.ceil(np.log2(vals))
         noisy = np.random.poisson(image * vals) / float(vals)
-        return noisy
+        return noisy.astype(output_type)
     elif noise_typ =="speckle":
         row,col,ch = image.shape
         gauss = np.random.randn(row,col,ch)
         gauss = gauss.reshape(row,col,ch)        
         noisy = image + image * gauss
-        return noisy
+        return noisy.astype(output_type)
+    
+def remove_empty_images(image_files, mask_files, edge_files=None, keep_prob = 0):
+    
+    new_image_files = []
+    new_mask_files = []
+    if edge_files is not None:
+        new_edge_files = []
+
+    
+    for i in range(len(image_files)):
+        image = cv2.imread(image_files[i])
+        
+        keep = np.random.choice([True, False], p=[keep_prob, 1 - keep_prob])
+        #keep = False
+        
+        if (len(np.unique(image)) == 1) and (not keep):
+            #print(f"deleting image {image_files[i]} where the max is {image.max()} unique is {len(np.unique(image))} keep {keep}")
+            del image
+            continue
+        else:
+            #print(f"keeping image {image_files[i]} where the max is {image.max()} unique is {len(np.unique(image))} keep {keep}")
+            del image
+        
+        new_image_files += [image_files[i]]
+        new_mask_files += [mask_files[i]]
+        if edge_files is not None:
+            new_edge_files += [edge_files[i]]
+    
+    if edge_files is not None:
+        return new_image_files, new_mask_files, new_edge_files
+    
+    return new_image_files, new_mask_files  
 
 def slice_images(imgs,
                padding=200,
