@@ -7,6 +7,8 @@ import cv2
 import numpy as np
 from tensorflow import keras
 from PIL import Image
+from tqdm import tqdm
+
 
 import matplotlib.pyplot as plt
 
@@ -442,7 +444,7 @@ def remove_empty_images(image_files, mask_files, edge_files=None, keep_prob = 0)
         new_edge_files = []
 
     
-    for i in range(len(image_files)):
+    for i in tqdm(range(len(image_files))):
         image = cv2.imread(image_files[i])
         
         keep = np.random.choice([True, False], p=[keep_prob, 1 - keep_prob])
