@@ -392,14 +392,16 @@ def predictFullImage(model,
                     input_size=188,
                     output_size=100,
                     normalize_input = False,
-                    normalize_output = False):
+                    normalize_output = False,
+                    edge = True):
     
     if normalize_input:
         imgs = data.clahe_images(imgs)
     
     images = imgs
     masks = []
-    edges = []
+    if edge:
+        edges = []
     
     for img in imgs:
         slices, img_sizes = data.slice_images([img],
@@ -410,24 +412,34 @@ def predictFullImage(model,
           
         prediction = model.predict(slices)
         
-        mask_slices = prediction[0]
-        edge_slices = prediction[1]
-        
+        if edge:
+            mask_slices = prediction[0]
+            edge_slices = prediction[1]
+        else:
+            mask_slices = prediction
+            
         mask_slices_2d = mask_slices.reshape((img_sizes[0][0], img_sizes[0][1], 100, 100, 1))
-        edge_slices_2d = edge_slices.reshape((img_sizes[0][0], img_sizes[0][1], 100, 100, 1))
+        
+        if edge:
+            edge_slices_2d = edge_slices.reshape((img_sizes[0][0], img_sizes[0][1], 100, 100, 1))
         
         full_mask = data.concat_slices(mask_slices_2d)
-        full_edge = data.concat_slices(edge_slices_2d)
+        if edge:
+            full_edge = data.concat_slices(edge_slices_2d)
         
         if normalize_output:
             full_mask = (full_mask > 0.5) * 1
-            full_edge = (full_edge > 0.5) * 1
+            if edge:
+                full_edge = (full_edge > 0.5) * 1
         
         masks += [full_mask]
-        edges += [full_edge]
-        
-    return (images, masks, edges)
+        if edge:
+                edges += [full_edge]
     
+    if edge:
+        return (images, masks, edges)
+    
+    return (images, masks)
     
 def get_callbacks(name):
     return [
