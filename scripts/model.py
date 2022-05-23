@@ -148,20 +148,19 @@ def generate_train_dataset(img_files):
 
         return train_gen()
     
-def generate_train_dataset3(img_files, mask_files, edge_files):
+def generate_train_dataset3(img_files, mask_files, edge_files=None):
         imgs = data.load_data_na(img_files, RGB=True, clahe=True)
         mask = data.load_data_na(mask_files)
-        edge = data.load_data_na(edge_files)
-        
+        if edge is not None:
+            edge = data.load_data_na(edge_files)
 
-        print(f"mask :  {np.unique(mask[0], return_counts=True)}")
-        print(f"edge :  {np.unique(edge[0], return_counts=True)}")
-        #print(f"img :  {np.unique(imgs[0], return_counts=True)}")
+        # print(f"mask :  {np.unique(mask[0], return_counts=True)}")
+        # print(f"edge :  {np.unique(edge[0], return_counts=True)}")
+        # print(f"img :  {np.unique(imgs[0], return_counts=True)}")
         
-        print(f"mask :  {mask[0].shape}")
-        print(f"edge :  {edge[0].shape}")
-        print(f"img :  {imgs[0].shape}")
-
+        # print(f"mask :  {mask[0].shape}")
+        # print(f"edge :  {edge[0].shape}")
+        # print(f"img :  {imgs[0].shape}")
 
         def train_gen():
             return data.train_generator(imgs, mask,
@@ -257,19 +256,30 @@ def generate_test_dataset_tf(img_files):
                                                 )
     
 
-def generate_test_dataset3(img_files, mask_files, edge_files):
+def generate_test_dataset3(img_files, mask_files, edge_files=None):
     #imgs = data.load_data_na(img_files, RGB=True, clahe=True)
     #mask = data.load_data_na(mask_files)
     #edge = data.load_data_na(edge_files)
-    (imgs, mask, edge) = data.load_data3(img_files, mask_files, edge_files)
+    if edge_files is not None:
+        (imgs, mask, edge) = data.load_data3(img_files, mask_files, edge_files)
+    else:
+        (imgs, mask) = data.load_data3(img_files, mask_files, None)
     
-    img_chips, mask_chips, edge_chips = data.test_chips(imgs, mask,
-                                                        edge=edge,
-                                                        padding=100,
-                                                        input_size=188,
-                                                        output_size=100)
+    if edge_files is not None:
+        img_chips, mask_chips, edge_chips = data.test_chips(imgs, mask,
+                                                            edge=edge,
+                                                            padding=100,
+                                                            input_size=188,
+                                                            output_size=100)
+    else:
+        img_chips, mask_chips = data.test_chips(imgs, mask, padding=100,
+                                                            input_size=188,
+                                                            output_size=100)
+    if edge_files is not None:
+        return img_chips, mask_chips, edge_chips
     
-    return img_chips, mask_chips, edge_chips
+    return img_chips, mask_chips
+    
 
 def generate_test_dataset3_(img_files, mask_files, edge_files):
     imgs, mask, edge = data.load_data3(img_files, mask_files, edge_files)
