@@ -120,10 +120,10 @@ def get_do_unet_WBC(compile = True):
     up3 = Conv2D_BN(up3, np_filters, kernel_size=(3, 3))  # 100x100
 
     out_mask = tf.keras.layers.Conv2D(1, (1, 1), activation='sigmoid', name='mask')(up3)
-    out_edge = tf.keras.layers.Conv2D(1, (1, 1), activation='sigmoid', name='edge')(up3)
+    #out_edge = tf.keras.layers.Conv2D(1, (1, 1), activation='sigmoid', name='edge')(up3)
     
 
-    model = tf.keras.models.Model(inputs=inputs, outputs=(out_mask, out_edge))
+    model = tf.keras.models.Model(inputs=inputs, outputs=(out_mask))
     
     if compile:
         model.compile(optimizer="adam",

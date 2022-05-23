@@ -110,7 +110,7 @@ class DataGenerator(tf.keras.utils.Sequence):
                 
             #add some noise to image
             noise_type = np.random.choice(['gauss', 'poisson', 's&p', 'speckle'])
-            image = noisy(noise_type, image)
+            image = data.noisy(noise_type, image)
             
             #reduce image quality
             
