@@ -1,6 +1,8 @@
 from sklearn.utils import shuffle
 import tensorflow as tf
 import numpy as np
+import cv2
+
 
 import data, model
 
@@ -13,25 +15,35 @@ class DataGenerator(tf.keras.utils.Sequence):
                  augment = True,
                  shuffle = False,
                  skip_empty = False,
-                 slice = False):
+                 keep_empty_prob = 0.05,
+                 slice = False,
+                 min_resize = 30):
         
         self.image_files = image_files
         self.mask_files = mask_files
         
-        # #TODO this is just a quick fix but we need to make it dynamic
-        # if edge_files is not None:
         self.edge_files = edge_files
-        # else:
-        #     self.edge_files = mask_files
-            
+
         self.batch_size = batch_size
         self.input_size = input_size
         
         self.augment = augment
         self.shuffle = shuffle
         self.skip_empty = skip_empty
-        
+        self.keep_empty_prob = keep_empty_prob
+        self.min_resize = min_resize        
+        self.slice = slice
         self.n = len(self.image_files)
+        
+        
+        
+        if skip_empty:
+            print(f"skipping empty images with keep probability of {self.keep_empty_prob}\nbefore skip we have {len(self.image_files)} images")
+            if self.edge_files is not None:
+                self.image_files, self.mask_files, self.edge_files = data.remove_empty_images(self.image_files, self.mask_files, self.edge_files, keep_prob = self.keep_empty_prob)
+            else:
+                self.image_files, self.mask_files = data.remove_empty_images(self.image_files, self.mask_files, keep_prob = self.keep_empty_prob)
+            print(f"after skip we have {len(self.image_files)} images")
     
     def on_epoch_end(self):
         if self.edge_files is not None:
@@ -81,20 +93,6 @@ class DataGenerator(tf.keras.utils.Sequence):
             mask = masks[i]
             if edges is not None:
                 edge = edges[i]
-            
-            if self.skip_empty:
-                if (len(np.unique(image)) == 1) is chip_type:
-                    #print(f"image {i} skiped")
-                    limit = limit - 1
-                    del images[i]
-                    del masks[i]
-                    if edges is not None:
-                        del edges[i]
-                    continue
-                else:
-                    i = i + 1
-            else:
-                i = i + 1
                     
             # randomly rotate
             rot = np.random.randint(4)
@@ -114,10 +112,24 @@ class DataGenerator(tf.keras.utils.Sequence):
             noise_type = np.random.choice(['gauss', 'poisson', 's&p', 'speckle'])
             #image = noisy(noise_type, image)
             
+            #reduce image quality
+            
+            min_scale = np.random.randint(30 // 2, 188 // 2) * 2
+            
+            image = cv2.resize(image, (min_scale, min_scale), interpolation= cv2.INTER_LINEAR)
+            image = cv2.resize(image, (188,188), interpolation= cv2.INTER_LINEAR)
+            
             # randomly luminosity augment
             image = data.aug_img(image)
             
             #TODO add blur and noise (maybe with quad tree we can do some noise)
+            
+            images[i] = image
+            masks[i] = mask
+            edges[i] = edge
+            
+            
+            i = i + 1
 
             
         
@@ -133,14 +145,16 @@ class DataGenerator(tf.keras.utils.Sequence):
             
         
         #we need to slice the images
-        if slice:
+        if self.slice:
             image_files = self.image_files
             mask_files = self.mask_files
             if self.edge_files is not None:
                 edge_files = self.edge_files
-                
-            image_files, mask_files, edge_files = shuffle(image_files, mask_files, edge_files)
             
+            if self.edge_files is not None:
+                image_files, mask_files, edge_files = shuffle(image_files, mask_files, edge_files)
+            else:
+                image_files, mask_files = shuffle(image_files, mask_files)
             images = []
             masks = []
             edges = []
@@ -157,11 +171,13 @@ class DataGenerator(tf.keras.utils.Sequence):
                 if i == 0:
                     images = image
                     masks = mask
-                    edges = edge
+                    if self.edge_files is not None:
+                        edges = edge
                 else:
                     images += image
                     masks += mask
-                    edges += edge
+                    if self.edge_files is not None:
+                        edges += edge
 
             #take n=batchsize random elements from the lists
             if self.edge_files is not None:
@@ -201,7 +217,7 @@ class DataGenerator(tf.keras.utils.Sequence):
             
         images = np.asarray(images)
         
-        if not slice:
+        if not self.slice:
             masks = np.asarray(masks).astype(np.float32)[..., np.newaxis]
             if self.edge_files is not None:
                 edges = np.asarray(edges).astype(np.float32)[..., np.newaxis]
