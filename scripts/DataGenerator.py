@@ -33,7 +33,7 @@ class DataGenerator(tf.keras.utils.Sequence):
         self.keep_empty_prob = keep_empty_prob
         self.min_resize = min_resize        
         self.slice = slice
-        self.n = len(self.image_files)
+        
         
         
         
@@ -44,6 +44,8 @@ class DataGenerator(tf.keras.utils.Sequence):
             else:
                 self.image_files, self.mask_files = data.remove_empty_images(self.image_files, self.mask_files, keep_prob = self.keep_empty_prob)
             print(f"after skip we have {len(self.image_files)} images")
+        
+        self.n = len(self.image_files)
     
     def on_epoch_end(self):
         if self.edge_files is not None:
@@ -223,10 +225,12 @@ class DataGenerator(tf.keras.utils.Sequence):
             if self.edge_files is not None:
                 edges = np.asarray(edges).astype(np.float32)[..., np.newaxis]
         
-        #print(f"loading batch number {index}")
+        
         if self.edge_files is not None:
+            print(f"loading batch number {index} which has shape image : {images.shape} mask : {masks.shape} edge : {edges.shape}")
             return images, (masks, edges)
     
+        print(f"loading batch number {index} which has shape image : {images.shape} mask : {masks.shape}")
         return images, (masks)
     
     def __len__(self):
