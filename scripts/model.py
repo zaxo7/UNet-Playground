@@ -77,6 +77,62 @@ def get_do_unet(compile = True):
 
     return model
 
+def get_do_unet_WBC(compile = True):
+    np_filters = 32
+
+    inputs = tf.keras.layers.Input((188, 188, 3))
+    
+    down1 = Conv2D_BN(inputs, filters=3*np_filters, kernel_size=(3, 3)) # 186x186
+    down1 = Conv2D_BN(down1, filters=np_filters, kernel_size=(1, 1))  # 186x186
+    down1 = Conv2D_BN(down1, filters=np_filters, kernel_size=(3, 3))  # 184x184
+    pool1 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=2)(down1)  # 92x92
+
+    np_filters *= 2
+    down2 = Conv2D_BN(pool1, filters=np_filters, kernel_size=(3, 3))  # 90x90
+    down2 = Conv2D_BN(down2, filters=np_filters, kernel_size=(3, 3))  # 88x88
+    pool2 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=2)(down2)  # 44x44
+
+    np_filters *= 2
+    down3 = Conv2D_BN(pool2, filters=np_filters, kernel_size=(3, 3))  # 42x42
+    down3 = Conv2D_BN(down3, filters=np_filters, kernel_size=(3, 3))  # 40x40
+    pool3 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=2)(down3)  # 20x20
+
+    np_filters *= 2
+    down4 = Conv2D_BN(pool3, filters=np_filters, kernel_size=(3, 3))  # 18x18
+    down4 = Conv2D_BN(down4, filters=np_filters, kernel_size=(3, 3))  # 16x16
+
+    np_filters /= 2
+    up1 = UpConv2D_BN(down4, filters=np_filters)  # 32x32
+    up1 = tf.keras.layers.concatenate([tf.keras.layers.Cropping2D(4)(down3), up1])  # 32x32
+    up1 = Conv2D_BN(up1, filters=np_filters, kernel_size=(3, 3))  # 30x30
+    up1 = Conv2D_BN(up1, filters=np_filters, kernel_size=(3, 3))  # 28x28
+
+    np_filters /= 2
+    up2 = UpConv2D_BN(up1, filters=np_filters)  #56x56
+    up2 = tf.keras.layers.concatenate([tf.keras.layers.Cropping2D(16)(down2), up2])  # 56x56
+    up2 = Conv2D_BN(up2, filters=np_filters, kernel_size=(3, 3))  # 54x54
+    up2 = Conv2D_BN(up2, filters=np_filters, kernel_size=(3, 3))  # 52x52
+
+    np_filters /= 2
+    up3 = UpConv2D_BN(up2, filters=np_filters)  # 104x104
+    up3 = tf.keras.layers.concatenate([tf.keras.layers.Cropping2D(40)(down1), up3])  # 104x104
+    up3 = Conv2D_BN(up3, np_filters, kernel_size=(3, 3))  # 102x102
+    up3 = Conv2D_BN(up3, np_filters, kernel_size=(3, 3))  # 100x100
+
+    out_mask = tf.keras.layers.Conv2D(1, (1, 1), activation='sigmoid', name='mask')(up3)
+    out_edge = tf.keras.layers.Conv2D(1, (1, 1), activation='sigmoid', name='edge')(up3)
+    
+
+    model = tf.keras.models.Model(inputs=inputs, outputs=(out_mask, out_edge))
+    
+    if compile:
+        model.compile(optimizer="adam",
+             loss="binary_crossentropy",
+             metrics=[mean_iou, dsc, tversky, 'acc'])
+
+
+    return model
+
 def get_do_unet_debug():
     np_filters = 32
 
