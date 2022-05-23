@@ -6,6 +6,7 @@ import cv2
 
 import data, model
 
+import matplotlib.pyplot as plt
 
 class DataGenerator(tf.keras.utils.Sequence):
     
@@ -16,6 +17,7 @@ class DataGenerator(tf.keras.utils.Sequence):
                  shuffle = False,
                  skip_empty = False,
                  keep_empty_prob = 0.05,
+                 noise_prob = 0.3,
                  slice = False,
                  min_resize = 30):
         
@@ -31,6 +33,8 @@ class DataGenerator(tf.keras.utils.Sequence):
         self.shuffle = shuffle
         self.skip_empty = skip_empty
         self.keep_empty_prob = keep_empty_prob
+        self.noise_prob = noise_prob
+        
         self.min_resize = min_resize        
         self.slice = slice
         
@@ -67,14 +71,14 @@ class DataGenerator(tf.keras.utils.Sequence):
             
             
             # rescale the image // normalisation to [-1,1] range
-            image = image.astype(np.float32) * 2
+            image = image.astype(np.float64) * 2
             image /= 255
             image -= 1
             
             images[i] = image
-            masks[i] = (mask > 0).astype(np.float32)#[..., np.newaxis]
+            masks[i] = (mask > 0).astype(np.float64)#[..., np.newaxis]
             if edges is not None:
-                edges[i] = (edge > 0).astype(np.float32)#[..., np.newaxis]
+                edges[i] = (edge > 0).astype(np.float64)#[..., np.newaxis]
         
         if edges is not None:
             return images, masks, edges
@@ -111,15 +115,19 @@ class DataGenerator(tf.keras.utils.Sequence):
                     edge = np.flip(edge, axis=1)
                 
             #add some noise to image
-            noise_type = np.random.choice(['gauss', 'poisson', 's&p', 'speckle'])
-            image = data.noisy(noise_type, image)
+            add_noise = np.random.choice([True, False], p=[self.noise_prob, 1 - self.noise_prob])
+            
+            if add_noise:
+                noise_type = np.random.choice(['gauss', 'poisson', 's&p', 'speckle'])
+                image = data.noisy(noise_type, image)
             
             #reduce image quality
             
             min_scale = np.random.randint(30 // 2, 188 // 2) * 2
             
-            image = cv2.resize(image, (min_scale, min_scale), interpolation= cv2.INTER_LINEAR)
-            image = cv2.resize(image, (188,188), interpolation= cv2.INTER_LINEAR)
+            if min_scale < 188:
+                image = cv2.resize(image, (min_scale, min_scale), interpolation= cv2.INTER_LINEAR)
+                image = cv2.resize(image, (188,188), interpolation= cv2.INTER_LINEAR)
             
             # randomly luminosity augment
             image = data.aug_img(image)
@@ -202,7 +210,7 @@ class DataGenerator(tf.keras.utils.Sequence):
                 images, masks, edges = self.__load_data(image_files, mask_files, edge_files)
             else:
                 images, masks = self.__load_data(image_files, mask_files)
-                
+
                 
         
         if self.augment:
@@ -215,15 +223,13 @@ class DataGenerator(tf.keras.utils.Sequence):
             images, masks, edges = self.__normalize(images, masks, edges)
         else:
             images, masks = self.__normalize(images, masks)
-            
-              
-            
+                      
         images = np.asarray(images)
         
         if not self.slice:
-            masks = np.asarray(masks).astype(np.float32)[..., np.newaxis]
+            masks = np.asarray(masks).astype(np.float64)[..., np.newaxis]
             if self.edge_files is not None:
-                edges = np.asarray(edges).astype(np.float32)[..., np.newaxis]
+                edges = np.asarray(edges).astype(np.float64)[..., np.newaxis]
         
         
         if self.edge_files is not None:
