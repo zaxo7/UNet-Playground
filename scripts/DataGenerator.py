@@ -233,10 +233,8 @@ class DataGenerator(tf.keras.utils.Sequence):
         
         
         if self.edge_files is not None:
-            print(f"loading batch number {index} which has shape image : {images.shape} mask : {masks.shape} edge : {edges.shape}")
             return images, (masks, edges)
     
-        print(f"loading batch number {index} which has shape image : {images.shape} mask : {masks.shape}")
         return images, (masks)
     
     def __len__(self):
