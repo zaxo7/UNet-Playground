@@ -606,3 +606,38 @@ def chunks(l, n = None):
         
     n = max(1, n)
     return [l[i:i+n] for i in range(0, len(l), n)]
+
+#this function takes a gray scale image and filters non connected objects by size
+def surfaceFilter(image, min_size = None, max_size = None, colorize = False):
+    img = image.copy()
+    
+    ret, labels = cv2.connectedComponents(img)
+    
+    
+    label_codes = np.unique(labels)
+    
+    result_image = labels + 1
+    
+    for label in label_codes:
+        count = (labels == label).sum()
+        if min_size is not None and (count < min_size):
+            result_image[labels == label] = 0
+        if max_size is not None and (count > max_size):
+            result_image[labels == label] = 0
+            
+    if colorize:
+        label_hue = np.uint8(179 * result_image / np.max(result_image))
+        blank_ch = 255 * np.ones_like(label_hue)
+        labeled_img = cv2.merge([label_hue, blank_ch, blank_ch])
+        labeled_img = cv2.cvtColor(labeled_img, cv.COLOR_HSV2BGR)
+        labeled_img[label_hue == 0] = 0
+    
+    return result_image
+
+def showImg(img, title="image", figSize=(15, 20), dpi=80):
+    fig = plt.figure(figsize=figSize, dpi=dpi)
+    fig.subplots_adjust(hspace=0.3, wspace=0.3)
+    ax = fig.add_subplot(1, 1, 1)
+    ax.axis("off")
+    ax.set_title(title)
+    ax.imshow(labeled_img)
