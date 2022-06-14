@@ -427,7 +427,7 @@ def predictFullImage(model,
         if edge:
             full_edge = data.concat_slices(edge_slices_2d)
             
-        print(edge_slices[0])
+        #print(edge_slices[0])
         
         if normalize_output:
             full_mask = (full_mask > 0.5) * 1
