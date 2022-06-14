@@ -607,12 +607,19 @@ def chunks(l, n = None):
     n = max(1, n)
     return [l[i:i+n] for i in range(0, len(l), n)]
 
+def showImg(img, title="image", figSize=(15, 20), dpi=80):
+    fig = plt.figure(figsize=figSize, dpi=dpi)
+    fig.subplots_adjust(hspace=0.3, wspace=0.3)
+    ax = fig.add_subplot(1, 1, 1)
+    ax.axis("off")
+    ax.set_title(title)
+    ax.imshow(img)
+    
 #this function takes a gray scale image and filters non connected objects by size
-def surfaceFilter(image, min_size = None, max_size = None, colorize = False):
+def surfaceFilter(image, min_size = None, max_size = None, colorize = False, gray = False):
     img = image.copy()
     
     ret, labels = cv2.connectedComponents(img)
-    
     
     label_codes = np.unique(labels)
     
@@ -626,18 +633,19 @@ def surfaceFilter(image, min_size = None, max_size = None, colorize = False):
             result_image[labels == label] = 0
             
     if colorize:
-        label_hue = np.uint8(179 * result_image / np.max(result_image))
-        blank_ch = 255 * np.ones_like(label_hue)
-        labeled_img = cv2.merge([label_hue, blank_ch, blank_ch])
-        labeled_img = cv2.cvtColor(labeled_img, cv.COLOR_HSV2BGR)
-        labeled_img[label_hue == 0] = 0
+        result_image = colorize_unique(result_image)
+        
+        if gray:
+            result_image = cv2.cvtColor(result_image, cv2.COLOR_BGR2GRAY)
     
     return result_image
 
-def showImg(img, title="image", figSize=(15, 20), dpi=80):
-    fig = plt.figure(figsize=figSize, dpi=dpi)
-    fig.subplots_adjust(hspace=0.3, wspace=0.3)
-    ax = fig.add_subplot(1, 1, 1)
-    ax.axis("off")
-    ax.set_title(title)
-    ax.imshow(labeled_img)
+def colorize_unique(image):
+    label_hue = np.uint8(179 * image / np.max(image))
+    blank_ch = 255 * np.ones_like(label_hue)
+    labeled_img = cv2.merge([label_hue, blank_ch, blank_ch])
+    labeled_img = cv2.cvtColor(labeled_img, cv2.COLOR_HSV2BGR)
+    labeled_img[label_hue == 0] = 0
+    return labeled_img
+
+
