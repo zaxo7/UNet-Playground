@@ -546,7 +546,7 @@ def plot_ime(imgs,
              columns = 2,
              figSize = (15,10),
              threshold = 0,
-             prefix = "predicted",
+             prefix = "",
              max_plots = 20):
     
     if max_plots > len(imgs):
@@ -568,15 +568,15 @@ def plot_ime(imgs,
         fig_num = fig_num + 1
         ax = fig.add_subplot(lines, columns, fig_num)
         ax.set_title(f"{prefix} mask {i}")
-        ax.imshow(mask)
+        ax.imshow(np.squeeze(mask))
         fig_num = fig_num + 1
         ax = fig.add_subplot(lines, columns, fig_num)
         ax.set_title(f"{prefix} edge mask {i}")
-        ax.imshow(edge)
+        ax.imshow(np.squeeze(edge))
         fig_num = fig_num + 1
         ax = fig.add_subplot(lines, columns, fig_num)
         ax.set_title(f"{prefix} substraction {i}")
-        ax.imshow((mask - edge) > threshold)
+        ax.imshow(np.squeeze((mask - edge) > threshold))
         
 
 #function to plot an array of images of shape (width, height, n_images)       
