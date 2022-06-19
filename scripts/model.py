@@ -437,6 +437,14 @@ def predictFullImage(model,
         masks += [full_mask]
         if edge:
                 edges += [full_edge]
+                
+        del slices
+        del img_sizes
+        del mask_slices
+        del mask_slices_2d
+        if edge:
+            del edge_slices
+            del edge_slices_2d
     
     if edge:
         return (images, masks, edges)

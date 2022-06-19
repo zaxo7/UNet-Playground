@@ -1,4 +1,5 @@
 """Load and preprocess data"""
+from operator import contains
 import os
 import json
 
@@ -619,18 +620,63 @@ def showImg(img, title="image", figSize=(15, 20), dpi=80):
 def surfaceFilter(image, min_size = None, max_size = None, colorize = False, gray = False):
     img = image.copy()
     
+    #showImg(img, "input")
+    
     ret, labels = cv2.connectedComponents(img)
+    
+    #(ret, labels, values, centroid) = cv2.connectedComponentsWithStats(img)
+    
+    #print(values)
+    
+    
     
     label_codes = np.unique(labels)
     
-    result_image = labels + 1
+    # print(ret)
     
+    # print(np.unique(labels))
+    
+    #labels = np.asarray(labels) + 1
+    
+    # print(np.unique(labels))
+    
+    # showImg(labels, "lables")
+    
+    result_image = labels
+    
+    if 9999  in result_image:
+        print("error the image contains the null number 9999")
+    
+    i = 0
+    background_index = 0
+    max = 0
     for label in label_codes:
         count = (labels == label).sum()
+        
+        #find the background index
+        if count > max:
+            max = count
+            background_index = i
+        
+        
         if min_size is not None and (count < min_size):
-            result_image[labels == label] = 0
+            result_image[labels == label] = 9999
+            #print(f"min: removing {count} because is < than {min_size}")
+        # else:
+        #     if min_size is not None:
+        #         print(f"min: {count} is > than {min_size}")
         if max_size is not None and (count > max_size):
-            result_image[labels == label] = 0
+            result_image[labels == label] = 9999
+        #     print(f"max: removing {count} because is > than {max_size}")
+        # else:
+        #     if max_size is not None:
+        #         print(f"max: {count} is < than {max_size}")
+        
+        i = i + 1
+    
+    
+    #print(f"background index is {background_index} with count = {max}")
+    result_image[result_image == 9999] = label_codes[background_index]
             
     if colorize:
         result_image = colorize_unique(result_image)
@@ -638,9 +684,11 @@ def surfaceFilter(image, min_size = None, max_size = None, colorize = False, gra
         if gray:
             result_image = cv2.cvtColor(result_image, cv2.COLOR_BGR2GRAY)
     
+    #showImg(result_image, "output")
     return result_image
 
 def colorize_unique(image):
+    # Map component labels to hue val
     label_hue = np.uint8(179 * image / np.max(image))
     blank_ch = 255 * np.ones_like(label_hue)
     labeled_img = cv2.merge([label_hue, blank_ch, blank_ch])
