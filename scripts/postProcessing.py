@@ -8,6 +8,8 @@ import imutils
 
 import cv2
 
+from math import pi
+
 from scripts.data import showImg
 
 #for RBC
@@ -208,7 +210,7 @@ def CCL_Count(_image, _mask, plot = False, min_filter_size = 400, max_filter_siz
     return cells
 
 
-def CHT_Count(_image, _mask, plot = False, min_filter_size = 400, max_filter_size = None, min_radius = 40, max_radius = 100, min_dist = 50, param1 = 1, param2 = 1, threshold_type = "binary"):
+def CHT_Count(_image, _mask, plot = False, min_filter_size = 400, max_filter_size = None, min_radius = 40, max_radius = 100, min_dist = 50, param1 = 1, param2 = 1, threshold_type = "binary", threshold = 80):
     
     mask = (_mask.copy() * 255.0).astype(np.uint8)
     
@@ -253,18 +255,89 @@ def CHT_Count(_image, _mask, plot = False, min_filter_size = 400, max_filter_siz
         circles = (circles[0]).astype(np.uint)
     else:
         circles = []
-        
-    print(circles)
 
-    print(f"found {len(circles)} circles")
+    print(f"found {len(circles)} circles before cleaning")
     
     
     image_circ = _image.copy()
     for i in np.arange(len(circles)):
         cv2.circle(image_circ, (circles[i,0], circles[i,1]), circles[i,2], color=(0,0,255), thickness=3)
         #Draw Center (red)
-        cv2.circle(image_circ, (circles[i,0], circles[i,1]), 3, color=(0,255,0), thickness=4)
+        #cv2.circle(image_circ, (circles[i,0], circles[i,1]), 3, color=(0,255,0), thickness=4)
         
     data.showImg(image_circ)
+    
+    circles = CL(_image, mask_clean_binary, circles=circles, threshold=threshold)
+    
+    print(circles)
+    
+    print(f"found {len(circles)} circles after cleaning")
+
+    image_circ = _image.copy()
+    for i in np.arange(len(circles)):
+        cv2.circle(image_circ, (circles[i][0], circles[i][1]), circles[i][2], color=(0,0,255), thickness=3)
+        #Draw Center (red)
+        #cv2.circle(image_circ, (circles[i][0], circles[i][1]), 3, color=(0,255,0), thickness=4)
         
+    data.showImg(image_circ)
+    
     return circles
+    
+    
+        
+    
+
+
+def CL(_image, _mask, circles, threshold = 80):
+    image = cv2.resize(_image, (_mask.shape[1], _mask.shape[0])) 
+    mask = _mask.copy()
+
+    # data.showImg(image, "input image")
+    data.showImg(mask, "input mask")
+    
+    mask_bin = mask
+        
+    data.showImg(mask_bin)
+    
+    new_circles = []
+    
+    #calculate the area of overlap between each circle and the mask
+    for circle in circles:
+        tmp_image = np.zeros_like(image)
+        cv2.circle(tmp_image, (circle[0], circle[1]), circle[2], color=(255,255,255), thickness=-1)
+        tmp_image = cv2.cvtColor(tmp_image, cv2.COLOR_BGR2GRAY)
+        # data.showImg(tmp_image)
+        
+        # print(np.unique(tmp_image))
+        # print(np.unique(mask_bin))
+        
+        tmp_image_rgb = cv2.cvtColor(tmp_image, cv2.COLOR_GRAY2BGR).astype(np.uint8)
+        mask_bin_rgb = cv2.cvtColor(mask_bin, cv2.COLOR_GRAY2BGR).astype(np.uint8)
+        
+        # print(tmp_image_rgb.shape)
+        # print(mask_bin_rgb.shape)
+        
+        overlap = cv2.bitwise_or(mask_bin_rgb, mask_bin_rgb, mask=tmp_image)
+        overlap = cv2.cvtColor(overlap, cv2.COLOR_BGR2GRAY)
+        #print(f"{overlap} pixels of mask overlaped with circle")
+        
+        
+        #calculate circle surface
+        circle_surface  = pi * circle[2]**2
+        # calculate the surface of intercection        
+        overlap_surface = (overlap > 0).sum()
+        
+        if overlap_surface > circle_surface:
+            print(f"error {circle_surface} < {overlap_surface}")
+            data.showImg(overlap)
+        
+        
+        overlap_percentage = (overlap_surface) * 100 / circle_surface
+        
+        if overlap_percentage > threshold:
+            new_circles += [circle.tolist()]
+        # else:
+        #     print(f"{overlap_percentage} <= {threshold}")
+
+    
+    return new_circles
