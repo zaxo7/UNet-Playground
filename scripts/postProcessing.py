@@ -1,7 +1,8 @@
-import data
+import data, model
 
 from skimage.feature import peak_local_max
 from skimage.segmentation import watershed
+from sklearn.metrics import r2_score
 from scipy import ndimage
 import numpy as np
 import imutils
@@ -269,7 +270,7 @@ def CHT_Count(_image, _mask, plot = False, min_filter_size = 400, max_filter_siz
     
     circles = CL(_image, mask_clean_binary, circles=circles, threshold=threshold)
     
-    print(circles)
+    #print(circles)
     
     print(f"found {len(circles)} circles after cleaning")
 
@@ -281,7 +282,7 @@ def CHT_Count(_image, _mask, plot = False, min_filter_size = 400, max_filter_siz
         
     data.showImg(image_circ)
     
-    return circles
+    return len(circles)
     
     
         
@@ -293,7 +294,7 @@ def CL(_image, _mask, circles, threshold = 80):
     mask = _mask.copy()
 
     # data.showImg(image, "input image")
-    data.showImg(mask, "input mask")
+    # data.showImg(mask, "input mask")
     
     mask_bin = mask
         
@@ -341,3 +342,92 @@ def CL(_image, _mask, circles, threshold = 80):
 
     
     return new_circles
+
+
+def WBC_Count(images_path, trained_model, _masks=None):
+    
+    ########################
+    
+    manual_count_file = open("ALL-IDB1_WBC_Count.txt", "r")
+
+    manual_count_file_lines = manual_count_file.readlines()
+    manual_count_file_lines = ''.join(manual_count_file_lines).split("\n")
+
+    manual_counts_f = []
+    manual_counts = []
+
+    for line in manual_count_file_lines:
+        split = line.split(" ")
+        manual_counts_f += [(split[0], split[1])]
+        manual_counts += [split[1]]
+        
+        
+    manual_counts = np.asarray(manual_counts).astype(np.int32)
+        
+    ########################
+  
+    min_filter_size = 1000
+    overlap_threshold = 60
+  
+    i = 0
+    
+    watershed_counts = []
+    ccl_counts = []
+    cht_counts = []
+    
+    real_counts = []
+    
+    for image in images_path:
+        if _masks is None:
+            images, masks = model.predictFullImage(trained_model,
+                                data.load_data_na([image], RGB=True, clahe=True),
+                                padding=100,
+                                input_size=188,
+                                output_size=100,
+                                normalize_output = False,
+                                edge=False)
+            del images
+        else:
+            masks = _masks
+        
+        original_image = data.load_data_na([image], RGB=True, preprocess = True, padding=100)
+        
+        print(f"counting WBC's in image {image}")
+        
+        watershed_count = Watershed_Count(original_image[0], masks[0], plot = False, min_filter_size=min_filter_size, threshold_type="binary")
+        watershed_counts += [watershed_count]
+        
+        ccl_count = CCL_Count(original_image[0], masks[0], plot=False, min_filter_size=min_filter_size)
+        ccl_counts += [ccl_count]      
+        
+        cht_count = CHT_Count(original_image[0], masks[0], plot=False, min_filter_size=min_filter_size, param1 = 500, param2 = 7.6, min_dist=80, threshold = overlap_threshold)
+        cht_counts += [cht_count]
+        
+        real_counts += [manual_counts[i]]
+        
+        
+        print(f"watershed = {watershed_count}")
+        print(f"ccl = {ccl_count}")
+        print(f"circle hough transform = {cht_count}")
+        
+        
+        Accuracy = (1 - (abs(manual_counts[i] - watershed_count)) / manual_counts[i]) * 100
+        R2 = r2_score([manual_counts[i]], [watershed_count])
+        
+        log(image, manual_counts[i], watershed_count, ccl_count, cht_count, R2, Accuracy)
+        
+        del original_image
+        i += 1
+    
+    #last line of log file we put the total accuracy and r2 score
+    Accuracy = (1 - (np.abs(np.subtract(real_counts, watershed_counts))) / real_counts) * 100
+    R2 = r2_score([real_counts], [watershed_counts])
+    log("Total", -1, -1, -1, -1, R2, Accuracy)
+      
+      
+def log(image_name, real_count, watershed_count, ccl_count, cht_count, r2, accuracy, log_file = "results.txt"):
+    separator = ' '
+    line = f"{image_name}{separator}{real_count}{separator}{watershed_count}{separator}{ccl_count}{separator}{cht_count}{separator}{r2}{separator}{accuracy}{separator}"
+    
+    with open(log_file, "a+") as file:
+        file.write(line + "\n")
