@@ -427,6 +427,9 @@ def WBC_Count(images_path, trained_model, _masks=None):
       
 def log(image_name, real_count, watershed_count, ccl_count, cht_count, r2, accuracy, log_file = "results.txt"):
     separator = ' '
+    Accuracy = Accuracy.mean()
+    if r2 is not np.NaN and (len(r2) > 1):
+        r2 = r2.mean()
     line = f"{image_name}{separator}{real_count}{separator}{watershed_count}{separator}{ccl_count}{separator}{cht_count}{separator}{r2}{separator}{accuracy}{separator}"
     
     with open(log_file, "a+") as file:
