@@ -411,26 +411,41 @@ def WBC_Count(images_path, trained_model, _masks=None):
         print(f"circle hough transform = {cht_count}")
         
         
-        Accuracy = (1 - (abs(manual_counts[i] - watershed_count)) / manual_counts[i]) * 100
-        R2 = r2_score([manual_counts[i]], [watershed_count])
+        watershed_accuracy = (1 - (abs(manual_counts[i] - watershed_count)) / manual_counts[i]) * 100
+        watershed_R2 = r2_score([manual_counts[i]], [watershed_count])
         
-        log(image, manual_counts[i], watershed_count, ccl_count, cht_count, R2, Accuracy)
+        ccl_accuracy = (1 - (abs(manual_counts[i] - ccl_count)) / manual_counts[i]) * 100
+        ccl_R2 = r2_score([manual_counts[i]], [ccl_count])
+
+
+        cht_accuracy = (1 - (abs(manual_counts[i] - cht_count)) / manual_counts[i]) * 100
+        cht_R2 = r2_score([manual_counts[i]], [cht_count])
+
+        
+        log(image, manual_counts[i], watershed_count, ccl_count, cht_count, watershed_R2, watershed_accuracy, ccl_R2, ccl_accuracy, cht_R2, cht_accuracy)
         
         del original_image
         i += 1
     
     #last line of log file we put the total accuracy and r2 score
-    Accuracy = (1 - (np.abs(np.subtract(real_counts, watershed_counts))) / real_counts) * 100
-    R2 = r2_score([real_counts], [watershed_counts])
-    log("Total", -1, -1, -1, -1, R2, Accuracy)
+    watershed_accuracy = (1 - (np.abs(np.subtract(real_counts, watershed_counts))) / real_counts) * 100
+    watershed_R2 = r2_score([real_counts], [watershed_counts])
+    
+    ccl_accuracy = (1 - (np.abs(np.subtract(real_counts, ccl_counts))) / real_counts) * 100
+    ccl_R2 = r2_score([real_counts], [ccl_counts])
+    
+    cht_accuracy = (1 - (np.abs(np.subtract(real_counts, cht_counts))) / real_counts) * 100
+    cht_R2 = r2_score([real_counts], [cht_counts])
+    
+    log("Total", -1, -1, -1, -1, watershed_R2, watershed_accuracy, ccl_R2, ccl_accuracy, cht_R2, cht_accuracy)
       
       
-def log(image_name, real_count, watershed_count, ccl_count, cht_count, r2, accuracy, log_file = "results.txt"):
-    separator = ' '
-    accuracy = accuracy.mean()
-    if r2 is not np.NaN and (len(r2) > 1):
-        r2 = r2.mean()
-    line = f"{image_name}{separator}{real_count}{separator}{watershed_count}{separator}{ccl_count}{separator}{cht_count}{separator}{r2}{separator}{accuracy}{separator}"
+def log(image_name, real_count, watershed_count, ccl_count, cht_count, watershed_R2, watershed_accuracy, ccl_R2, ccl_accuracy, cht_R2, cht_accuracy, log_file = "results.txt"):
+    separator = '\t'
+    watershed_accuracy = watershed_accuracy.mean()
+    ccl_accuracy = ccl_accuracy.mean()
+    cht_accuracy = cht_accuracy.mean()
+    line = f"{image_name}{separator}{real_count}{separator}{watershed_count}{separator}{ccl_count}{separator}{cht_count}{separator}{watershed_R2}{separator}{watershed_accuracy}{separator}{ccl_R2}{separator}{ccl_accuracy}{separator}{cht_R2}{separator}{cht_accuracy}{separator}"
     
     with open(log_file, "a+") as file:
         file.write(line + "\n")
