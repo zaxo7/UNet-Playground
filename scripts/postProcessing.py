@@ -19,7 +19,7 @@ from scripts.data import showImg
 #local_max_min_dist = 50
 #min_filter_size = 1000
 #thresh =  binary 127
-def Watershed_Count(_image, _mask, plot = False, min_filter_size = 400, max_filter_size = None, threshold_type = "binary", local_max_min_dist = 50):
+def Watershed_Count(_image, _mask, plot = False, plot_res = True, min_filter_size = 400, max_filter_size = None, threshold_type = "binary", local_max_min_dist = 50):
     
     mask = (_mask.copy() * 255.0).astype(np.uint8)
     
@@ -76,6 +76,10 @@ def Watershed_Count(_image, _mask, plot = False, min_filter_size = 400, max_filt
     # perform a connected component analysis on the local peaks to label each local maxima with a num,
     # using 8-connectivity, then appy the Watershed algorithm we can also use connected component labeling
     markers = ndimage.label(localMax, structure=np.ones((3, 3)))[0]
+    
+    (nbcells, out_image, values, centroid) = cv2.connectedComponentsWithStats(localmax)
+    
+    print(f"found {nbcells} with localMax")
 
     if plot:
         #same image as local maxima
@@ -116,7 +120,8 @@ def Watershed_Count(_image, _mask, plot = False, min_filter_size = 400, max_filt
             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     #if plot:
         # show the output image
-    data.showImg(image_orig, title=f"final output with {cells} cells")
+    if plot_res:    
+        data.showImg(image_orig, f"Watershed Final Output with {cells} cells")
         
     del mask
     del mask_thresh_binary
@@ -134,7 +139,7 @@ def Watershed_Count(_image, _mask, plot = False, min_filter_size = 400, max_filt
 
 
 
-def CCL_Count(_image, _mask, plot = False, min_filter_size = 400, max_filter_size = None, threshold_type = "binary"):
+def CCL_Count(_image, _mask, plot = False, plot_res = True, min_filter_size = 400, max_filter_size = None, threshold_type = "binary"):
     
     mask = (_mask.copy() * 255.0).astype(np.uint8)
     
@@ -198,7 +203,8 @@ def CCL_Count(_image, _mask, plot = False, min_filter_size = 400, max_filter_siz
             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     #if plot:
         # show the output image
-    data.showImg(image_orig, title=f"final output with {cells} cells")
+    if plot_res:    
+        data.showImg(image_orig, f"Connected Component Labeling Final Output with {cells} cells")
         
     del mask
     del mask_thresh_binary
@@ -211,7 +217,7 @@ def CCL_Count(_image, _mask, plot = False, min_filter_size = 400, max_filter_siz
     return cells
 
 
-def CHT_Count(_image, _mask, plot = False, min_filter_size = 400, max_filter_size = None, min_radius = 40, max_radius = 100, min_dist = 50, param1 = 1, param2 = 1, threshold_type = "binary", threshold = 80):
+def CHT_Count(_image, _mask, plot = False, plot_res = True, min_filter_size = 400, max_filter_size = None, min_radius = 40, max_radius = 100, min_dist = 50, param1 = 1, param2 = 1, threshold_type = "binary", threshold = 80):
     
     mask = (_mask.copy() * 255.0).astype(np.uint8)
     
@@ -257,7 +263,7 @@ def CHT_Count(_image, _mask, plot = False, min_filter_size = 400, max_filter_siz
     else:
         circles = []
 
-    print(f"found {len(circles)} circles before cleaning")
+    #print(f"found {len(circles)} circles before cleaning")
     
     
     image_circ = _image.copy()
@@ -265,22 +271,22 @@ def CHT_Count(_image, _mask, plot = False, min_filter_size = 400, max_filter_siz
         cv2.circle(image_circ, (circles[i,0], circles[i,1]), circles[i,2], color=(0,0,255), thickness=3)
         #Draw Center (red)
         #cv2.circle(image_circ, (circles[i,0], circles[i,1]), 3, color=(0,255,0), thickness=4)
-        
-    data.showImg(image_circ)
+    if plot:   
+        data.showImg(image_circ)
     
     circles = CL(_image, mask_clean_binary, circles=circles, threshold=threshold)
     
     #print(circles)
     
-    print(f"found {len(circles)} circles after cleaning")
+    #print(f"found {len(circles)} circles after cleaning")
 
     image_circ = _image.copy()
     for i in np.arange(len(circles)):
         cv2.circle(image_circ, (circles[i][0], circles[i][1]), circles[i][2], color=(0,0,255), thickness=3)
         #Draw Center (red)
         #cv2.circle(image_circ, (circles[i][0], circles[i][1]), 3, color=(0,255,0), thickness=4)
-        
-    data.showImg(image_circ)
+    if plot_res:    
+        data.showImg(image_circ, f"Circle Hough Transform Final Output with {len(circles)} cells")
     
     return len(circles)
     
@@ -298,7 +304,7 @@ def CL(_image, _mask, circles, threshold = 80):
     
     mask_bin = mask
         
-    data.showImg(mask_bin)
+    #data.showImg(mask_bin)
     
     new_circles = []
     
@@ -394,6 +400,9 @@ def WBC_Count(images_path, trained_model, _masks=None):
         
         print(f"counting WBC's in image {image}")
         
+        data.showImg(original_image[0], f"{image}")
+        data.showImg(masks[0], f"{image}")
+        
         watershed_count = Watershed_Count(original_image[0], masks[0], plot = False, min_filter_size=min_filter_size, threshold_type="binary")
         watershed_counts += [watershed_count]
         
@@ -412,40 +421,41 @@ def WBC_Count(images_path, trained_model, _masks=None):
         
         
         watershed_accuracy = (1 - (abs(manual_counts[i] - watershed_count)) / manual_counts[i]) * 100
-        watershed_R2 = r2_score([manual_counts[i]], [watershed_count])
+        # watershed_R2 = r2_score([manual_counts[i]], [watershed_count])
         
         ccl_accuracy = (1 - (abs(manual_counts[i] - ccl_count)) / manual_counts[i]) * 100
-        ccl_R2 = r2_score([manual_counts[i]], [ccl_count])
+        # ccl_R2 = r2_score([manual_counts[i]], [ccl_count])
 
 
         cht_accuracy = (1 - (abs(manual_counts[i] - cht_count)) / manual_counts[i]) * 100
-        cht_R2 = r2_score([manual_counts[i]], [cht_count])
+        # cht_R2 = r2_score([manual_counts[i]], [cht_count])
 
         
-        log(image, manual_counts[i], watershed_count, ccl_count, cht_count, watershed_R2, watershed_accuracy, ccl_R2, ccl_accuracy, cht_R2, cht_accuracy)
+        log(image, manual_counts[i], watershed_count, ccl_count, cht_count, watershed_accuracy, ccl_accuracy, cht_accuracy)
         
         del original_image
         i += 1
     
     #last line of log file we put the total accuracy and r2 score
     watershed_accuracy = (1 - (np.abs(np.subtract(real_counts, watershed_counts))) / real_counts) * 100
-    watershed_R2 = r2_score([real_counts], [watershed_counts])
+    # watershed_R2 = r2_score(real_counts, watershed_counts)
     
     ccl_accuracy = (1 - (np.abs(np.subtract(real_counts, ccl_counts))) / real_counts) * 100
-    ccl_R2 = r2_score([real_counts], [ccl_counts])
+    # ccl_R2 = r2_score(real_counts, ccl_counts)
     
     cht_accuracy = (1 - (np.abs(np.subtract(real_counts, cht_counts))) / real_counts) * 100
-    cht_R2 = r2_score([real_counts], [cht_counts])
+    # cht_R2 = r2_score(real_counts, cht_counts)
     
-    log("Total", -1, -1, -1, -1, watershed_R2, watershed_accuracy, ccl_R2, ccl_accuracy, cht_R2, cht_accuracy)
+    log("Total", -1, -1, -1, -1, watershed_accuracy, ccl_accuracy, cht_accuracy)
       
       
-def log(image_name, real_count, watershed_count, ccl_count, cht_count, watershed_R2, watershed_accuracy, ccl_R2, ccl_accuracy, cht_R2, cht_accuracy, log_file = "results.txt"):
+#def log(image_name, real_count, watershed_count, ccl_count, cht_count, watershed_R2, watershed_accuracy, ccl_R2, ccl_accuracy, cht_R2, cht_accuracy, log_file = "results.txt"):
+def log(image_name, real_count, watershed_count, ccl_count, cht_count, watershed_accuracy, ccl_accuracy, cht_accuracy, log_file = "results.txt"):
     separator = '\t'
     watershed_accuracy = watershed_accuracy.mean()
     ccl_accuracy = ccl_accuracy.mean()
     cht_accuracy = cht_accuracy.mean()
-    line = f"{image_name}{separator}{real_count}{separator}{watershed_count}{separator}{ccl_count}{separator}{cht_count}{separator}{watershed_R2}{separator}{watershed_accuracy}{separator}{ccl_R2}{separator}{ccl_accuracy}{separator}{cht_R2}{separator}{cht_accuracy}{separator}"
+    line = f"{image_name}{separator}{real_count}{separator}{watershed_count}{separator}{ccl_count}{separator}{cht_count}{separator}{watershed_accuracy:.2f}{separator}{ccl_accuracy:.2f}{separator}{cht_accuracy:.2f}{separator}"
     
     with open(log_file, "a+") as file:
         file.write(line + "\n")
