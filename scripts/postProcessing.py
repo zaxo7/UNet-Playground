@@ -19,7 +19,7 @@ from scripts.data import showImg
 #local_max_min_dist = 50
 #min_filter_size = 1000
 #thresh =  binary 127
-def Watershed_Count(_image, _mask, plot = False, plot_res = True, min_filter_size = 400, max_filter_size = None, threshold_type = "binary", local_max_min_dist = 50):
+def Watershed_Count(_image, _mask, plot = False, plot_res = True, return_image = False, min_filter_size = 400, max_filter_size = None, threshold_type = "binary", local_max_min_dist = 50):
     
     mask = (_mask.copy() * 255.0).astype(np.uint8)
     
@@ -46,7 +46,7 @@ def Watershed_Count(_image, _mask, plot = False, plot_res = True, min_filter_siz
         data.showImg(mask, title="original mask")
     
     
-    mask_clean_gray = data.surfaceFilter(mask_thresh_binary, min_size = min_filter_size, max_size= max_filter_size, colorize = True, gray=True)
+    mask_clean_gray = data.surfaceFilter(mask_thresh_binary, min_size = min_filter_size, max_size= max_filter_size, colorize = False, gray=False)
     
 
     if plot:
@@ -131,9 +131,11 @@ def Watershed_Count(_image, _mask, plot = False, plot_res = True, min_filter_siz
     del localMax
     del markers
     del labels
+        
+    if return_image == True:
+        return (cells, image_orig)
+    
     del image_orig
-        
-        
     return cells
 
 
@@ -217,7 +219,7 @@ def CCL_Count(_image, _mask, plot = False, plot_res = True, min_filter_size = 40
     return cells
 
 
-def CHT_Count(_image, _mask, plot = False, plot_res = True, min_filter_size = 400, max_filter_size = None, min_radius = 40, max_radius = 100, min_dist = 50, param1 = 1, param2 = 1, threshold_type = "binary", threshold = 80):
+def CHT_Count(_image, _mask, plot = False, plot_res = True, return_image = False, min_filter_size = 400, max_filter_size = None, min_radius = 40, max_radius = 100, min_dist = 50, param1 = 1, param2 = 1, threshold_type = "binary", threshold = 80):
     
     mask = (_mask.copy() * 255.0).astype(np.uint8)
     
@@ -287,6 +289,9 @@ def CHT_Count(_image, _mask, plot = False, plot_res = True, min_filter_size = 40
         #cv2.circle(image_circ, (circles[i][0], circles[i][1]), 3, color=(0,255,0), thickness=4)
     if plot_res:    
         data.showImg(image_circ, f"Circle Hough Transform Final Output with {len(circles)} cells")
+    
+    if return_image == True:
+        return (len(circles), image_circ)
     
     return len(circles)
     
