@@ -1,0 +1,323 @@
+counting WBC's in image ALL-IDB1/Im001_1.jpg
+[INFO] 20 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im002_1.jpg
+[INFO] 24 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im003_1.jpg
+[INFO] 17 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im004_1.jpg
+[INFO] 12 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im005_1.jpg
+[INFO] 36 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im006_1.jpg
+[INFO] 23 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im007_1.jpg
+[INFO] 15 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im008_1.jpg
+[INFO] 25 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im009_1.jpg
+[INFO] 13 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im010_1.jpg
+[INFO] 23 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im011_1.jpg
+[INFO] 21 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im012_1.jpg
+[INFO] 16 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im013_1.jpg
+[INFO] 15 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im014_1.jpg
+[INFO] 14 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im015_1.jpg
+[INFO] 23 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im016_1.jpg
+[INFO] 23 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im017_1.jpg
+[INFO] 3 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im018_1.jpg
+[INFO] 21 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im019_1.jpg
+[INFO] 27 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im020_1.jpg
+[INFO] 4 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im021_1.jpg
+[INFO] 3 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im022_1.jpg
+[INFO] 5 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im023_1.jpg
+[INFO] 7 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im024_1.jpg
+[INFO] 4 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im025_1.jpg
+[INFO] 3 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im026_1.jpg
+[INFO] 13 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im027_1.jpg
+[INFO] 4 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im028_1.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im029_1.jpg
+[INFO] 5 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im030_1.jpg
+[INFO] 4 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im031_1.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im032_1.jpg
+[INFO] 3 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im033_1.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im034_0.jpg
+[INFO] 3 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im035_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im036_0.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im037_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im038_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im039_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im040_0.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im041_0.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im042_0.jpg
+[INFO] 3 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im043_0.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im044_0.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im045_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im046_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im047_0.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im048_1.jpg
+[INFO] 30 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im049_1.jpg
+[INFO] 24 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im050_1.jpg
+[INFO] 26 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im051_1.jpg
+[INFO] 20 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im052_1.jpg
+[INFO] 35 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im053_1.jpg
+[INFO] 47 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im054_1.jpg
+[INFO] 23 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im055_1.jpg
+[INFO] 32 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im056_1.jpg
+[INFO] 21 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im057_1.jpg
+[INFO] 25 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im058_1.jpg
+[INFO] 30 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im059_1.jpg
+[INFO] 64 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im060_1.jpg
+[INFO] 15 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im061_1.jpg
+[INFO] 37 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im062_1.jpg
+[INFO] 37 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im063_1.jpg
+[INFO] 27 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im064_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im065_0.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im066_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im067_0.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im068_0.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im069_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im070_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im071_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im072_0.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im073_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im074_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im075_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im076_0.jpg
+[INFO] 4 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im077_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im078_0.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im079_0.jpg
+[INFO] 10 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im080_0.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im081_0.jpg
+[INFO] 3 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im082_0.jpg
+[INFO] 3 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im083_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im084_0.jpg
+[INFO] 4 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im085_0.jpg
+[INFO] 7 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im086_0.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im087_0.jpg
+[INFO] 4 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im088_0.jpg
+[INFO] 5 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im089_0.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im090_0.jpg
+[INFO] 7 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im091_0.jpg
+[INFO] 4 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im092_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im093_0.jpg
+[INFO] 7 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im094_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im095_0.jpg
+[INFO] 6 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im096_0.jpg
+[INFO] 3 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im097_0.jpg
+[INFO] 3 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im098_0.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im099_0.jpg
+[INFO] 4 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im100_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im101_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im102_0.jpg
+[INFO] 1 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im103_0.jpg
+[INFO] 3 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im104_0.jpg
+[INFO] 3 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im105_0.jpg
+[INFO] 3 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im106_0.jpg
+[INFO] 3 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im107_0.jpg
+[INFO] 2 WBC's found with Watershed
+
+counting WBC's in image ALL-IDB1/Im108_0.jpg
+[INFO] 7 WBC's found with Watershed
