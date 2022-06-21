@@ -1,4 +1,4 @@
-import data
+import data, model
 
 from skimage.feature import peak_local_max
 from skimage.segmentation import watershed
@@ -281,7 +281,7 @@ def CHT_Count(_image, _mask, plot = False, min_filter_size = 400, max_filter_siz
         
     data.showImg(image_circ)
     
-    return circles
+    return len(circles)
     
     
         
@@ -293,7 +293,7 @@ def CL(_image, _mask, circles, threshold = 80):
     mask = _mask.copy()
 
     # data.showImg(image, "input image")
-    data.showImg(mask, "input mask")
+    # data.showImg(mask, "input mask")
     
     mask_bin = mask
         
@@ -341,3 +341,35 @@ def CL(_image, _mask, circles, threshold = 80):
 
     
     return new_circles
+
+
+def WBC_Count(images_path, trained_model):
+  
+    min_filter_size = 1000
+    overlap_threshold = 60
+  
+    for image in images_path:
+      images, masks = model.predictFullImage(trained_model,
+                            data.load_data_na([image], RGB=True, clahe=True),
+                          padding=100,
+                          input_size=188,
+                          output_size=100,
+                          normalize_output = False,
+                          edge=False)
+      del images
+      
+      original_image = data.load_data_na([image], RGB=True, preprocess = True, padding=100)
+      
+      print(f"counting WBC's in image {image}")
+      
+      watershed_count = Watershed_Count(original_image[0], masks[0], plot = False, min_filter_size=min_filter_size, threshold_type="binary")
+      
+      ccl_count = CCL_Count(original_image[0], masks[0], plot=False, min_filter_size=min_filter_size)
+      
+      cht_count = CHT_Count(original_image[0], masks[0], plot=False, min_filter_size=min_filter_size, param1 = 500, param2 = 7.6, min_dist=80, threshold = overlap_threshold)
+      
+      print(f"watershed = {watershed_count}")
+      print(f"ccl = {ccl_count}")
+      print(f"circle hough transform = {cht_count}")
+      
+      del original_image
