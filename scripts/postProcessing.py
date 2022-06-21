@@ -77,9 +77,9 @@ def Watershed_Count(_image, _mask, plot = False, plot_res = True, min_filter_siz
     # using 8-connectivity, then appy the Watershed algorithm we can also use connected component labeling
     markers = ndimage.label(localMax, structure=np.ones((3, 3)))[0]
     
-    (nbcells, out_image, values, centroid) = cv2.connectedComponentsWithStats(localMax.astype(np.uint8))
+    #(nbcells, out_image, values, centroid) = cv2.connectedComponentsWithStats(localMax.astype(np.uint8))
     
-    print(f"found {nbcells} with localMax")
+    #print(f"found {nbcells} with localMax")
 
     if plot:
         #same image as local maxima
@@ -87,7 +87,7 @@ def Watershed_Count(_image, _mask, plot = False, plot_res = True, min_filter_siz
 
     labels = watershed(-D, markers, mask=mask_clean_gray)
 
-    print("[INFO] {} WBC's found with Watershed".format(len(np.unique(labels)) - 1))
+    #print("[INFO] {} WBC's found with Watershed".format(len(np.unique(labels)) - 1))
     
     cells =  len(np.unique(labels)) - 1
 
