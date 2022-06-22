@@ -52,7 +52,6 @@ def Watershed_Count(_image, _mask, plot = False, plot_res = True, return_image =
     
     
     mask_clean_gray = data.surfaceFilter(mask_thresh_binary, min_size = min_filter_size, max_size= max_filter_size, colorize = False, gray=False)
-
     
 
     if plot:
@@ -320,6 +319,7 @@ def CHT_Count(_image, _mask, plot = False, plot_res = True,return_image = False,
     
     if return_image == True:
         return (len(circles), image_circ)
+    
     return len(circles)
     
     
