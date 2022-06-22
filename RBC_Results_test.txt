@@ -1,0 +1,15 @@
+Image	Real count	Watershed	CCL	CHT	Watershed_acc	CCL_acc	CHT_acc
+data/test/Im037_0.jpg	105	85	70	102	80.95	66.67	97.14
+data/test/Im045_0.jpg	601	517	415	577	86.02	69.05	96.01
+data/test/Im053_1.jpg	802	571	320	652	71.20	39.90	81.30
+data/train/Im001_1.jpg	215	214	205	216	99.53	95.35	99.53
+data/train/Im004_1.jpg	258	280	247	268	91.47	95.74	96.12
+data/train/Im015_1.jpg	293	295	260	281	99.32	88.74	95.90
+data/train/Im022_1.jpg	242	251	235	246	96.28	97.11	98.35
+data/train/Im050_1.jpg	460	498	423	519	91.74	91.96	87.17
+data/train/Im069_0.jpg	665	651	531	675	97.89	79.85	98.50
+data/train/Im079_0.jpg	512	496	398	518	96.88	77.73	98.83
+data/train/Im095_0.jpg	150	189	95	150	74.00	63.33	100.00
+data/train/Im099_0.jpg	528	478	397	517	90.53	75.19	97.92
+data/train/Im108_0.jpg	510	511	418	546	99.80	81.96	92.94
+Total	-1	-1	-1	-1	90.43	78.66	95.36
