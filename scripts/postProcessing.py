@@ -391,12 +391,12 @@ def WBC_Count(images_path, trained_model, _masks=None):
     manual_count_file_lines = manual_count_file.readlines()
     manual_count_file_lines = ''.join(manual_count_file_lines).split("\n")
 
-    manual_counts_f = []
+    manual_counts_f = {}
     manual_counts = []
 
     for line in manual_count_file_lines:
         split = line.split(" ")
-        manual_counts_f += [(split[0], split[1])]
+        manual_counts_f[split[0]] = int(split[1])
         manual_counts += [split[1]]
         
         
@@ -435,7 +435,7 @@ def WBC_Count(images_path, trained_model, _masks=None):
         data.showImg(original_image[0], f"{image}")
         data.showImg(masks[0], f"{image}")
         
-        (watershed_count, image) = Watershed_Count( original_image[i], 
+        (watershed_count, watershed_image) = Watershed_Count( original_image[0], 
                                                     masks[0],
                                                     plot = False, 
                                                     plot_res = False, 
@@ -445,15 +445,16 @@ def WBC_Count(images_path, trained_model, _masks=None):
                                                     local_max_min_dist = 67)
         watershed_counts += [watershed_count]
         
-        (ccl_count, image) = CCL_Count( original_image[i],
-                                        masks[i],
+        (ccl_count, ccl_image) = CCL_Count( original_image[0],
+                                        masks[0],
                                         plot=False,
                                         plot_res = False,
                                         return_image = True,
-                                        min_filter_size=1650)
+                                        min_filter_size=1650,
+                                        mask_binary = True)
         ccl_counts += [ccl_count]      
         
-        (cht_count, image) = CHT_Count( original_image[i],
+        (cht_count, cht_image) = CHT_Count( original_image[0],
                                         masks[0],
                                         plot=False,
                                         plot_res = False,
@@ -462,29 +463,32 @@ def WBC_Count(images_path, trained_model, _masks=None):
                                         param1 = 50,
                                         param2 = 8,
                                         min_dist=70,
-                                        threshold = 59)        
+                                        threshold = 59,
+                                        mask_binary = True)        
         cht_counts += [cht_count]
         
-        real_counts += [manual_counts[i]]
+        image_name = image.split("/")[-1].split(".")[0]
         
+        real_counts += [manual_counts_f[image_name]]
         
+        print(f"real count = {manual_counts_f[image_name]}")
         print(f"watershed = {watershed_count}")
         print(f"ccl = {ccl_count}")
         print(f"circle hough transform = {cht_count}")
         
         
-        watershed_accuracy = (1 - (abs(manual_counts[i] - watershed_count)) / manual_counts[i]) * 100
+        watershed_accuracy = (1 - (abs(manual_counts_f[image_name] - watershed_count)) / manual_counts_f[image_name]) * 100
         # watershed_R2 = r2_score([manual_counts[i]], [watershed_count])
         
-        ccl_accuracy = (1 - (abs(manual_counts[i] - ccl_count)) / manual_counts[i]) * 100
+        ccl_accuracy = (1 - (abs(manual_counts_f[image_name] - ccl_count)) / manual_counts_f[image_name]) * 100
         # ccl_R2 = r2_score([manual_counts[i]], [ccl_count])
 
 
-        cht_accuracy = (1 - (abs(manual_counts[i] - cht_count)) / manual_counts[i]) * 100
+        cht_accuracy = (1 - (abs(manual_counts_f[image_name] - cht_count)) / manual_counts_f[image_name]) * 100
         # cht_R2 = r2_score([manual_counts[i]], [cht_count])
 
         
-        log(image, manual_counts[i], watershed_count, ccl_count, cht_count, [watershed_accuracy], [ccl_accuracy], [cht_accuracy])
+        log(image, manual_counts_f[image_name], watershed_count, ccl_count, cht_count, np.asarray([watershed_accuracy]), np.asarray([ccl_accuracy]), np.asarray([cht_accuracy]), log_file="WBC_Results.txt")
         
         del original_image
         i += 1
@@ -499,7 +503,7 @@ def WBC_Count(images_path, trained_model, _masks=None):
     cht_accuracy = (1 - (np.abs(np.subtract(real_counts, cht_counts))) / real_counts) * 100
     # cht_R2 = r2_score(real_counts, cht_counts)
     
-    log("Total", -1, -1, -1, -1, watershed_accuracy, ccl_accuracy, cht_accuracy)
+    log("Total", -1, -1, -1, -1, watershed_accuracy, ccl_accuracy, cht_accuracy, log_file="WBC_Results.txt")
 
 
 def RBC_Count(images_path, trained_model, _masks=None):
