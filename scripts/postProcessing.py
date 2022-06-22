@@ -146,11 +146,7 @@ def Watershed_Count(_image, _mask, plot = False, plot_res = True, return_image =
 
 
 
-<<<<<<< HEAD
-def CCL_Count(_image, _mask, plot = False, plot_res = True, return_image = False, min_filter_size = 400, max_filter_size = None, threshold_type = "binary"):
-=======
 def CCL_Count(_image, _mask, plot = False, plot_res = True, return_image = False, min_filter_size = 400, max_filter_size = None, threshold_type = "binary", mask_binary = False):
->>>>>>> 4e1d2798d93d2ad6e65803b5d0e2ec117d7cfc2f
     
     mask = _mask.copy()
     
@@ -229,14 +225,6 @@ def CCL_Count(_image, _mask, plot = False, plot_res = True, return_image = False
     del mask_clean_gray
     del mask_clean_binary
     del labels
-<<<<<<< HEAD
-    
-    if return_image == True:
-        return(cells, image_orig)
-    
-    del image_orig
-=======
->>>>>>> 4e1d2798d93d2ad6e65803b5d0e2ec117d7cfc2f
     
     if return_image == True:
         return (cells, image_orig)
