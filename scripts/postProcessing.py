@@ -435,13 +435,34 @@ def WBC_Count(images_path, trained_model, _masks=None):
         data.showImg(original_image[0], f"{image}")
         data.showImg(masks[0], f"{image}")
         
-        watershed_count = Watershed_Count(original_image[0], masks[0], plot = False, min_filter_size=min_filter_size, threshold_type="binary")
+        (watershed_count, image) = Watershed_Count( original_image[i], 
+                                                    masks[0],
+                                                    plot = False, 
+                                                    plot_res = False, 
+                                                    return_image = True, 
+                                                    min_filter_size=1650,
+                                                    threshold_type="binary", 
+                                                    local_max_min_dist = 67)
         watershed_counts += [watershed_count]
         
-        ccl_count = CCL_Count(original_image[0], masks[0], plot=False, min_filter_size=min_filter_size)
+        (ccl_count, image) = CCL_Count( original_image[i],
+                                        masks[i],
+                                        plot=False,
+                                        plot_res = False,
+                                        return_image = True,
+                                        min_filter_size=1650)
         ccl_counts += [ccl_count]      
         
-        cht_count = CHT_Count(original_image[0], masks[0], plot=False, min_filter_size=min_filter_size, param1 = 500, param2 = 7.6, min_dist=80, threshold = overlap_threshold)
+        (cht_count, image) = CHT_Count( original_image[i],
+                                        masks[0],
+                                        plot=False,
+                                        plot_res = False,
+                                        return_image = True,
+                                        min_filter_size=1650,
+                                        param1 = 50,
+                                        param2 = 8,
+                                        min_dist=70,
+                                        threshold = 59)        
         cht_counts += [cht_count]
         
         real_counts += [manual_counts[i]]
@@ -463,7 +484,7 @@ def WBC_Count(images_path, trained_model, _masks=None):
         # cht_R2 = r2_score([manual_counts[i]], [cht_count])
 
         
-        log(image, manual_counts[i], watershed_count, ccl_count, cht_count, watershed_accuracy, ccl_accuracy, cht_accuracy)
+        log(image, manual_counts[i], watershed_count, ccl_count, cht_count, [watershed_accuracy], [ccl_accuracy], [cht_accuracy])
         
         del original_image
         i += 1
