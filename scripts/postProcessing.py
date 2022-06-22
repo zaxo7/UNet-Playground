@@ -19,6 +19,11 @@ from scripts.data import showImg
 #local_max_min_dist = 50
 #min_filter_size = 1000
 #thresh =  binary 127
+
+circle_color = (255,0,0)
+circle_thickness = 2
+show_text =  False
+
 def Watershed_Count(_image, _mask, plot = False, plot_res = True, return_image = False, min_filter_size = 400, max_filter_size = None, threshold_type = "binary", local_max_min_dist = 50):
     
     mask = (_mask.copy() * 255.0).astype(np.uint8)
@@ -115,9 +120,9 @@ def Watershed_Count(_image, _mask, plot = False, plot_res = True, return_image =
         c = max(cnts, key=cv2.contourArea)
         # draw a circle enclosing the object
         ((x, y), r) = cv2.minEnclosingCircle(c)
-        cv2.circle(image_orig, (int(x), int(y)), int(r), (0, 255, 0), 2)
-        cv2.putText(image_orig, "#{}".format(label), (int(x) - 10, int(y)),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+        cv2.circle(image_orig, (int(x), int(y)), int(r), circle_color, 2)
+        if show_text:
+            cv2.putText(image_orig, "#{}".format(label), (int(x) - 10, int(y)),cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     #if plot:
         # show the output image
     if plot_res:    
@@ -141,9 +146,18 @@ def Watershed_Count(_image, _mask, plot = False, plot_res = True, return_image =
 
 
 
+<<<<<<< HEAD
 def CCL_Count(_image, _mask, plot = False, plot_res = True, return_image = False, min_filter_size = 400, max_filter_size = None, threshold_type = "binary"):
+=======
+def CCL_Count(_image, _mask, plot = False, plot_res = True, return_image = False, min_filter_size = 400, max_filter_size = None, threshold_type = "binary", mask_binary = False):
+>>>>>>> 4e1d2798d93d2ad6e65803b5d0e2ec117d7cfc2f
     
-    mask = (_mask.copy() * 255.0).astype(np.uint8)
+    mask = _mask.copy()
+    
+    if mask_binary:
+        mask = (_mask.copy() * 255.0).astype(np.uint8)
+        
+    mask = mask.astype(np.uint8)
     
     mask_thresh_binary = None
     if threshold_type == "binary":
@@ -157,6 +171,8 @@ def CCL_Count(_image, _mask, plot = False, plot_res = True, return_image = False
     
         if plot:
             data.showImg(mask_gray_otsu, title="otsu")
+    elif threshold_type == None:
+        mask_thresh_binary = mask
     else:
         print("error unknown thresh")
         return
@@ -165,7 +181,7 @@ def CCL_Count(_image, _mask, plot = False, plot_res = True, return_image = False
         data.showImg(mask, title="original mask")
     
     
-    mask_clean_gray = data.surfaceFilter(mask_thresh_binary, min_size = min_filter_size, max_size= max_filter_size, colorize = True, gray=True)
+    mask_clean_gray = data.surfaceFilter(mask_thresh_binary, min_size = min_filter_size, max_size= max_filter_size, colorize = False, gray=False)
     
 
     if plot:
@@ -200,9 +216,9 @@ def CCL_Count(_image, _mask, plot = False, plot_res = True, return_image = False
         c = max(cnts, key=cv2.contourArea)
         # draw a circle enclosing the object
         ((x, y), r) = cv2.minEnclosingCircle(c)
-        cv2.circle(image_orig, (int(x), int(y)), int(r), (0, 255, 0), 2)
-        cv2.putText(image_orig, "#{}".format(label), (int(x) - 10, int(y)),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+        cv2.circle(image_orig, (int(x), int(y)), int(r), circle_color, 2)
+        if show_text:
+            cv2.putText(image_orig, "#{}".format(label), (int(x) - 10, int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     #if plot:
         # show the output image
     if plot_res:    
@@ -213,19 +229,31 @@ def CCL_Count(_image, _mask, plot = False, plot_res = True, return_image = False
     del mask_clean_gray
     del mask_clean_binary
     del labels
+<<<<<<< HEAD
     
     if return_image == True:
         return(cells, image_orig)
     
     del image_orig
+=======
+>>>>>>> 4e1d2798d93d2ad6e65803b5d0e2ec117d7cfc2f
     
+    if return_image == True:
+        return (cells, image_orig)
+    
+    del image_orig
     
     return cells
 
 
-def CHT_Count(_image, _mask, plot = False, plot_res = True, return_image = False, min_filter_size = 400, max_filter_size = None, min_radius = 40, max_radius = 100, min_dist = 50, param1 = 1, param2 = 1, threshold_type = "binary", threshold = 80):
+def CHT_Count(_image, _mask, plot = False, plot_res = True,return_image = False, min_filter_size = 400, max_filter_size = None, min_radius = 40, max_radius = 100, min_dist = 50, param1 = 1, param2 = 1, threshold_type = "binary", threshold = 80, threshold_mask = None, mask_binary = False):
+
+    mask = _mask.copy()
     
-    mask = (_mask.copy() * 255.0).astype(np.uint8)
+    if mask_binary:
+        mask = (_mask.copy() * 255.0).astype(np.uint8)
+        
+    mask = mask.astype(np.uint8)
     
     mask_thresh_binary = None
     if threshold_type == "binary":
@@ -239,6 +267,8 @@ def CHT_Count(_image, _mask, plot = False, plot_res = True, return_image = False
     
         if plot:
             data.showImg(mask_gray_otsu, title="otsu")
+    elif threshold_type == None:
+        mask_thresh_binary = mask
     else:
         print("error unknown thresh")
         return
@@ -247,8 +277,11 @@ def CHT_Count(_image, _mask, plot = False, plot_res = True, return_image = False
         data.showImg(mask, title="original mask")
     
     
-    mask_clean_gray = data.surfaceFilter(mask_thresh_binary, min_size = min_filter_size, max_size= max_filter_size, colorize = True, gray=True)
-    
+    mask_clean_gray = data.surfaceFilter(mask_thresh_binary, min_size = min_filter_size, max_size= max_filter_size, colorize = False, gray=False)
+    if threshold_mask is not None:
+        threshold_mask_clean_gray = data.surfaceFilter(threshold_mask, min_size = min_filter_size, max_size= max_filter_size, colorize = False, gray=False)
+        
+        threshold_mask_clean_binary = ((mask_clean_gray > 0) * 255.0).astype(np.uint8)
 
     if plot:
         data.showImg(mask_clean_gray, title="clean mask gray scale")
@@ -279,8 +312,10 @@ def CHT_Count(_image, _mask, plot = False, plot_res = True, return_image = False
         #cv2.circle(image_circ, (circles[i,0], circles[i,1]), 3, color=(0,255,0), thickness=4)
     if plot:   
         data.showImg(image_circ)
-    
-    circles = CL(_image, mask_clean_binary, circles=circles, threshold=threshold)
+    if threshold_mask is None:
+        circles = CL(_image, mask_clean_binary, circles=circles, threshold=threshold)
+    else:
+        circles = CL(_image, threshold_mask_clean_binary, circles=circles, threshold=threshold)
     
     #print(circles)
     
@@ -288,7 +323,7 @@ def CHT_Count(_image, _mask, plot = False, plot_res = True, return_image = False
 
     image_circ = _image.copy()
     for i in np.arange(len(circles)):
-        cv2.circle(image_circ, (circles[i][0], circles[i][1]), circles[i][2], color=(0,0,255), thickness=3)
+        cv2.circle(image_circ, (circles[i][0], circles[i][1]), circles[i][2], color=circle_color, thickness=circle_thickness)
         #Draw Center (red)
         #cv2.circle(image_circ, (circles[i][0], circles[i][1]), 3, color=(0,255,0), thickness=4)
     if plot_res:    
@@ -412,13 +447,34 @@ def WBC_Count(images_path, trained_model, _masks=None):
         data.showImg(original_image[0], f"{image}")
         data.showImg(masks[0], f"{image}")
         
-        watershed_count = Watershed_Count(original_image[0], masks[0], plot = False, min_filter_size=min_filter_size, threshold_type="binary")
+        (watershed_count, image) = Watershed_Count( original_image[i], 
+                                                    masks[0],
+                                                    plot = False, 
+                                                    plot_res = False, 
+                                                    return_image = True, 
+                                                    min_filter_size=1650,
+                                                    threshold_type="binary", 
+                                                    local_max_min_dist = 67)
         watershed_counts += [watershed_count]
         
-        ccl_count = CCL_Count(original_image[0], masks[0], plot=False, min_filter_size=min_filter_size)
+        (ccl_count, image) = CCL_Count( original_image[i],
+                                        masks[i],
+                                        plot=False,
+                                        plot_res = False,
+                                        return_image = True,
+                                        min_filter_size=1650)
         ccl_counts += [ccl_count]      
         
-        cht_count = CHT_Count(original_image[0], masks[0], plot=False, min_filter_size=min_filter_size, param1 = 500, param2 = 7.6, min_dist=80, threshold = overlap_threshold)
+        (cht_count, image) = CHT_Count( original_image[i],
+                                        masks[0],
+                                        plot=False,
+                                        plot_res = False,
+                                        return_image = True,
+                                        min_filter_size=1650,
+                                        param1 = 50,
+                                        param2 = 8,
+                                        min_dist=70,
+                                        threshold = 59)        
         cht_counts += [cht_count]
         
         real_counts += [manual_counts[i]]
@@ -440,7 +496,7 @@ def WBC_Count(images_path, trained_model, _masks=None):
         # cht_R2 = r2_score([manual_counts[i]], [cht_count])
 
         
-        log(image, manual_counts[i], watershed_count, ccl_count, cht_count, watershed_accuracy, ccl_accuracy, cht_accuracy)
+        log(image, manual_counts[i], watershed_count, ccl_count, cht_count, [watershed_accuracy], [ccl_accuracy], [cht_accuracy])
         
         del original_image
         i += 1
@@ -456,7 +512,131 @@ def WBC_Count(images_path, trained_model, _masks=None):
     # cht_R2 = r2_score(real_counts, cht_counts)
     
     log("Total", -1, -1, -1, -1, watershed_accuracy, ccl_accuracy, cht_accuracy)
-      
+
+
+def RBC_Count(images_path, trained_model, _masks=None):
+    min_filter_size = 1000
+    overlap_threshold = 60
+  
+    i = 0
+    
+    watershed_counts = []
+    ccl_counts = []
+    cht_counts = []
+    
+    real_counts = []
+    
+    for image in images_path:
+        if _masks is None:
+            images, masks, edges = model.predictFullImage(trained_model,
+                                data.load_data_na([image], RGB=True, clahe=True),
+                                padding=100,
+                                input_size=188,
+                                output_size=100,
+                                normalize_output = False)
+            del images
+        else:
+            masks = _masks
+        
+        original_image = data.load_data_na([image], RGB=True, preprocess = True, padding=100)
+        
+        json_file = image.split('.')[0] + ".json"
+
+
+        polygon_list = data.make_polygon_lists([json_file])[0]
+        real_count = len(polygon_list)
+
+        print(f"real count is {real_count}")
+
+        mask = (masks[0] * 255.0).astype(np.uint8)
+
+        edge = (edges[0] * 255.0).astype(np.uint8)
+
+
+        ret2, mask_gray_otsu = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        ret2, edge_gray_otsu = cv2.threshold(edge, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+
+        edge_inv = np.invert(edge_gray_otsu)
+
+        mask_edge = (((mask_gray_otsu & edge_inv) > 127) * 1).astype(np.uint8)
+
+        
+        print(f"counting RBC's in image {image}")
+        
+        data.showImg(original_image[0], f"{image}")
+        data.showImg(masks[0], f"{image}")
+        
+        (watershed_count, watershed_image) = Watershed_Count(original_image[0], 
+                                                    mask_edge, 
+                                                    plot = False, 
+                                                    plot_res = True, 
+                                                    return_image = True, 
+                                                    min_filter_size=1475,
+                                                    threshold_type="binary", 
+                                                    local_max_min_dist = 19)
+        watershed_counts += [watershed_count]
+        
+        (ccl_count, ccl_image) = CCL_Count(original_image[0], 
+                                           mask_edge, 
+                                           plot=False, 
+                                           plot_res=True, 
+                                           return_image = True, 
+                                           min_filter_size=1000,
+                                           threshold_type=None)
+        ccl_counts += [ccl_count]      
+        
+        (cht_count, cht_image)  = CHT_Count(original_image[0],
+                                        edge,
+                                        plot=False,
+                                        plot_res = True,
+                                        return_image = True, 
+                                        min_filter_size=300, 
+                                        param1 = 50, 
+                                        param2 = 12, 
+                                        min_dist=31, 
+                                        min_radius = 25,
+                                        max_radius = 61,
+                                        threshold = 0, 
+                                        threshold_type=None,
+                                        threshold_mask = mask,
+                                        mask_binary = False)
+        cht_counts += [cht_count]
+        
+        real_counts += [real_count]
+        
+        
+        print(f"watershed = {watershed_count}")
+        print(f"ccl = {ccl_count}")
+        print(f"circle hough transform = {cht_count}")
+        
+        
+        watershed_accuracy = (1 - (abs(real_counts[i] - watershed_count)) / real_counts[i]) * 100
+        # watershed_R2 = r2_score([manual_counts[i]], [watershed_count])
+        
+        ccl_accuracy = (1 - (abs(real_counts[i] - ccl_count)) / real_counts[i]) * 100
+        # ccl_R2 = r2_score([manual_counts[i]], [ccl_count])
+
+
+        cht_accuracy = (1 - (abs(real_counts[i] - cht_count)) / real_counts[i]) * 100
+        # cht_R2 = r2_score([manual_counts[i]], [cht_count])
+
+        
+        log(image, real_counts[i], watershed_count, ccl_count, cht_count, np.asarray([watershed_accuracy]), np.asarray([ccl_accuracy]), np.asarray([cht_accuracy]), log_file="RBC_Results.txt")
+        
+        del original_image
+        i += 1
+    
+    #last line of log file we put the total accuracy and r2 score
+    watershed_accuracy = (1 - (np.abs(np.subtract(real_counts, watershed_counts))) / real_counts) * 100
+    # watershed_R2 = r2_score(real_counts, watershed_counts)
+    
+    ccl_accuracy = (1 - (np.abs(np.subtract(real_counts, ccl_counts))) / real_counts) * 100
+    # ccl_R2 = r2_score(real_counts, ccl_counts)
+    
+    cht_accuracy = (1 - (np.abs(np.subtract(real_counts, cht_counts))) / real_counts) * 100
+    # cht_R2 = r2_score(real_counts, cht_counts)
+    
+    log("Total", -1, -1, -1, -1, watershed_accuracy, ccl_accuracy, cht_accuracy, log_file="RBC_Results.txt")      
       
 #def log(image_name, real_count, watershed_count, ccl_count, cht_count, watershed_R2, watershed_accuracy, ccl_R2, ccl_accuracy, cht_R2, cht_accuracy, log_file = "results.txt"):
 def log(image_name, real_count, watershed_count, ccl_count, cht_count, watershed_accuracy, ccl_accuracy, cht_accuracy, log_file = "results.txt"):
@@ -464,7 +644,9 @@ def log(image_name, real_count, watershed_count, ccl_count, cht_count, watershed
     watershed_accuracy = watershed_accuracy.mean()
     ccl_accuracy = ccl_accuracy.mean()
     cht_accuracy = cht_accuracy.mean()
-    line = f"{image_name}{separator}{real_count}{separator}{watershed_count}{separator}{ccl_count}{separator}{cht_count}{separator}{watershed_accuracy:.2f}{separator}{ccl_accuracy:.2f}{separator}{cht_accuracy:.2f}{separator}"
+    line = f"{image_name}{separator}{real_count}{separator}{watershed_count}{separator}{ccl_count}{separator}{cht_count}{separator}{watershed_accuracy:.2f}{separator}{ccl_accuracy:.2f}{separator}{cht_accuracy:.2f}"
     
     with open(log_file, "a+") as file:
         file.write(line + "\n")
+
+
