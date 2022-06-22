@@ -620,13 +620,15 @@ def showImg(img, title="image", figSize=(15, 20), dpi=80):
 def surfaceFilter(image, min_size = None, max_size = None, colorize = False, gray = False):
     img = image.copy()
     
+    unique_num = 2147483647
+    
     #showImg(img, "input")
     
     ret, labels = cv2.connectedComponents(img)
     
     #(ret, labels, values, centroid) = cv2.connectedComponentsWithStats(img)
     
-    #print(values)
+    #print(labels.dtype)
     
     
     
@@ -644,8 +646,8 @@ def surfaceFilter(image, min_size = None, max_size = None, colorize = False, gra
     
     result_image = labels
     
-    if 9999  in result_image:
-        print("error the image contains the null number 9999")
+    if unique_num  in result_image:
+        print(f"error the image contains the null number {unique_num}")
     
     i = 0
     background_index = 0
@@ -660,13 +662,13 @@ def surfaceFilter(image, min_size = None, max_size = None, colorize = False, gra
         
         
         if min_size is not None and (count < min_size):
-            result_image[labels == label] = 9999
+            result_image[labels == label] = unique_num
             #print(f"min: removing {count} because is < than {min_size}")
         # else:
         #     if min_size is not None:
         #         print(f"min: {count} is > than {min_size}")
         if max_size is not None and (count > max_size):
-            result_image[labels == label] = 9999
+            result_image[labels == label] = unique_num
         #     print(f"max: removing {count} because is > than {max_size}")
         # else:
         #     if max_size is not None:
@@ -676,7 +678,7 @@ def surfaceFilter(image, min_size = None, max_size = None, colorize = False, gra
     
     
     #print(f"background index is {background_index} with count = {max}")
-    result_image[result_image == 9999] = label_codes[background_index]
+    result_image[result_image == unique_num] = label_codes[background_index]
             
     if colorize:
         result_image = colorize_unique(result_image)
