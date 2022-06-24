@@ -20,7 +20,7 @@ from scripts.data import showImg
 #min_filter_size = 1000
 #thresh =  binary 127
 
-circle_color = (255,0,0)
+circle_color = (0,0,255)
 circle_thickness = 2
 show_text =  False
 
@@ -191,7 +191,7 @@ def CCL_Count(_image, _mask, plot = False, plot_res = True, return_image = False
         
         
     (cells, labels, values, centroid) = cv2.connectedComponentsWithStats(mask_clean_binary)
-    
+    cells = cells-1
     
     #loop over the unique labels returned by the Watershed
     # algorithm

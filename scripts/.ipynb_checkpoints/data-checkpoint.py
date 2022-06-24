@@ -1,11 +1,16 @@
 """Load and preprocess data"""
+from operator import contains
 import os
 import json
+
 
 import cv2
 import numpy as np
 from tensorflow import keras
 from PIL import Image
+from tqdm import tqdm
+import json
+
 
 import matplotlib.pyplot as plt
 
@@ -16,9 +21,9 @@ def load_image_list(img_files, RGB=False):
         if RGB:
             img = cv2.imread(image_file)
         else:
-            im_gray = cv2.imread(image_file, cv2.IMREAD_GRAYSCALE)
+            img = cv2.imread(image_file, cv2.IMREAD_GRAYSCALE)
             thresh = 127
-            img = cv2.threshold(im_gray, thresh, 255, cv2.THRESH_BINARY)[1]
+            img = cv2.threshold(img, thresh, 255, cv2.THRESH_BINARY)[1]
             
         imgs += [img]
     return imgs
@@ -123,15 +128,38 @@ def load_data(img_list, edge_size=2, padding=200):
 
     markup_list = [f.split('.')[0] + '.json' for f in img_list]
     mask, edge = load_markup(markup_list, imgs, edge_size=edge_size)
+    
+    #print("load_data before preprocessing:")
+    #print(f"image: {imgs[0].shape}\nmask : {mask[0].shape}\nedge : {edge[0].shape}")
+    
+    imgs, mask, edge = preprocess_data(imgs, mask, edge, padding=padding)
+    
+    #print("load_data after preprocessing:")
+    #print(f"image: {imgs[0].shape}\nmask : {mask[0].shape}\nedge : {edge[0].shape}")
 
-    return preprocess_data(imgs, mask, edge, padding=padding)
+    return imgs, mask, edge
 
-def load_data_na(img_list, edge_size=2, padding=200, RGB=False, clahe=False):
-    imgs = load_image_list(img_list, RGB=RGB)
+def load_data3(img_files, mask_files, edge_files=None, edge_size=2, padding=200, preprocess=True):
+    imgs = load_data_na(img_files, RGB=True, clahe=True, preprocess=preprocess)
+    mask = load_data_na(mask_files, preprocess=preprocess)
+    if edge_files is not None:
+        edge = load_data_na(edge_files, preprocess=preprocess)
+    
+    if edge_files is not None:
+        return imgs, mask, edge
+    
+    return imgs, mask
+    
+
+def load_data_na(img_list, edge_size=2, padding=200, RGB=False, clahe=False, preprocess=True):
+    img_list = load_image_list(img_list, RGB=RGB)
     if clahe:
-        imgs = clahe_images(imgs)
+        img_list = clahe_images(img_list)
+    
+    if preprocess:
+        img_list = preprocess_data_na(img_list, padding=padding, RGB=RGB)
 
-    return preprocess_data_na(imgs, padding=padding, RGB=RGB)
+    return img_list
 
 
 def aug_lum(image, factor=None):
@@ -150,7 +178,7 @@ def aug_lum(image, factor=None):
     return cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 
 
-def aug_img(image):
+def aug_img(image, calln = 0):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     hsv = hsv.astype(np.float64)
 
@@ -173,8 +201,8 @@ def aug_img(image):
     #check if the image is fully black don't return it
     pimg = Image.fromarray(img , 'RGB')
     # image all black or all white
-    if sum(pimg.convert("L").getextrema()) in (0, 2):
-        return aug_img(image)
+    if (sum(pimg.convert("L").getextrema()) in (0, 2)) and (calln < 4):
+        return aug_img(image, calln = calln + 1)
     else:
         return img
 
@@ -263,7 +291,6 @@ def train_generator(imgs, mask, edge,
                               (temp_edge > 0).astype(float)[..., np.newaxis])
             break
 
-
 def test_chips(imgs, mask,
                edge=None,
                padding=200,
@@ -312,6 +339,232 @@ def test_chips(imgs, mask,
 
     return img_chips, mask_chips
 
+def test_chips3(imgs, mask,
+               edge=None,
+               padding=200,
+               input_size=380,
+               output_size=196):
+    img_chips = []
+    mask_chips = []
+    if edge is not None:
+        edge_chips = []
+
+    center_offset = padding + (output_size / 2)
+    for i, _ in enumerate(imgs):
+        for x in np.arange(center_offset, imgs[i].shape[0] - input_size / 2, output_size):
+            for y in np.arange(center_offset, imgs[i].shape[1] - input_size / 2, output_size):
+                chip_x_l = int(x - (input_size / 2))
+                chip_x_r = int(x + (input_size / 2))
+                chip_y_l = int(y - (input_size / 2))
+                chip_y_r = int(y + (input_size / 2))
+
+                mask_x_l = int(x - (output_size / 2))
+                mask_x_r = int(x + (output_size / 2))
+                mask_y_l = int(y - (output_size / 2))
+                mask_y_r = int(y + (output_size / 2))
+
+                temp_chip = imgs[i][chip_x_l:chip_x_r, chip_y_l:chip_y_r]
+                temp_mask = mask[i][mask_x_l:mask_x_r, mask_y_l:mask_y_r]
+                if edge is not None:
+                    temp_edge = edge[i][mask_x_l:mask_x_r, mask_y_l:mask_y_r]
+                    
+                    
+                if temp_mask.shape != (100, 100, 1) and (temp_mask.shape != (100, 100)):
+                    print("test_chips:")
+                    print(f"img_chip shape : {temp_chip.shape}")
+                    print(f"mask_chip shape : {temp_mask.shape}")
+                    print(f"edge_chip shape : {temp_edge.shape}")
+                    return temp_chip, temp_mask, temp_edge
+
+                temp_chip = temp_chip.astype(np.float32) * 2
+                temp_chip /= 255
+                temp_chip -= 1
+
+                img_chips += [temp_chip]
+                mask_chips += [(temp_mask > 0).astype(float)[..., np.newaxis]]
+                if edge is not None:
+                    edge_chips += [(temp_edge > 0).astype(float)[..., np.newaxis]]
+
+    img_chips = np.array(img_chips)
+    mask_chips = np.array(mask_chips)
+    if edge is not None:
+        edge_chips = np.array(edge_chips)
+    print("test_chips:")
+    print(f"img_chips shape : {img_chips.shape}")
+    print(f"mask_chips shape : {mask_chips.shape}")
+    print(f"edge_chips shape : {edge_chips.shape}")
+
+    if edge is not None:
+        return img_chips, mask_chips, edge_chips
+
+    return img_chips, mask_chips
+
+def noisy(noise_typ,image, output_type = np.uint8):
+    if noise_typ == "gauss":
+        row,col,ch= image.shape
+        mean = 0
+        var = 0.1
+        sigma = var**0.5
+        gauss = np.random.normal(mean,sigma,(row,col,ch))
+        gauss = gauss.reshape(row,col,ch)
+        noisy = image + gauss
+        return noisy.astype(output_type)
+    elif noise_typ == "s&p":
+        row,col,ch = image.shape
+        s_vs_p = 0.5
+        amount = 0.004
+        out = np.copy(image)
+        # Salt mode
+        num_salt = np.ceil(amount * image.size * s_vs_p)
+        coords = [np.random.randint(0, i - 1, int(num_salt))
+                for i in image.shape]
+        out[coords] = 1
+
+        # Pepper mode
+        num_pepper = np.ceil(amount* image.size * (1. - s_vs_p))
+        coords = [np.random.randint(0, i - 1, int(num_pepper))
+                for i in image.shape]
+        out[coords] = 0
+        return out.astype(output_type)
+    elif noise_typ == "poisson":
+        vals = len(np.unique(image))
+        vals = 2 ** np.ceil(np.log2(vals))
+        noisy = np.random.poisson(image * vals) / float(vals)
+        return noisy.astype(output_type)
+    elif noise_typ =="speckle":
+        row,col,ch = image.shape
+        gauss = np.random.randn(row,col,ch)
+        gauss = gauss.reshape(row,col,ch)        
+        noisy = image + image * gauss
+        return noisy.astype(output_type)
+    
+def remove_empty_images(image_files, mask_files, edge_files=None, keep_prob = 0, overwrite = False):
+    
+    new_image_files = []
+    new_mask_files = []
+    if edge_files is not None:
+        new_edge_files = []
+
+    #check the existance of dictionary of empty files
+    dictPath = '/'.join(mask_files[0].split('/')[:-2]) + '/empty_files_dict.json'
+    
+    
+    dictExists = os.path.exists(dictPath)
+    
+    if dictExists:
+        # Opening JSON file
+        with open(dictPath) as fp:
+            # returns JSON object as
+            # a dictionary
+            empty_files_dict = json.load(fp)
+        
+        #integrity check
+        if len(empty_files_dict) != len(mask_files):
+            dictExists = False
+            empty_files_dict = {}
+    else:
+        empty_files_dict = {}
+    
+    
+    
+    
+    for i in tqdm(range(len(image_files))):
+        
+        keep = np.random.choice([True, False], p=[keep_prob, 1 - keep_prob])
+        
+        if not dictExists:
+            image = cv2.imread(image_files[i])
+        
+            empty_files_dict[image_files[i]] = (len(np.unique(image)) < 5)
+            
+            if (len(np.unique(image)) < 5) and (not keep):
+                #print(f"deleting image {image_files[i]} where the max is {image.max()} unique is {len(np.unique(image))} keep {keep}")
+                del image
+                continue
+            else:
+                #print(f"keeping image {image_files[i]} where the max is {image.max()} unique is {len(np.unique(image))} keep {keep}")
+                del image
+        else:
+            if (empty_files_dict[image_files[i]] == True) and (not keep):
+                continue
+        
+        new_image_files += [image_files[i]]
+        new_mask_files += [mask_files[i]]
+        if edge_files is not None:
+            new_edge_files += [edge_files[i]]
+            
+    if not dictExists:
+        with open(dictPath, "w+") as fp:
+            json.dump(empty_files_dict,fp)
+    
+    if edge_files is not None:
+        return new_image_files, new_mask_files, new_edge_files
+    
+    return new_image_files, new_mask_files  
+
+def remove_empty_masks(image_files, mask_files, edge_files=None, keep_prob = 0, overwrite = False):
+        
+    new_image_files = []
+    new_mask_files = []
+    if edge_files is not None:
+        new_edge_files = []
+
+    #check the existance of dictionary of empty files
+    dictPath = '/'.join(mask_files[0].split('/')[:-2]) + '/empty_files_dict.json'
+    
+    
+    dictExists = os.path.exists(dictPath)
+    
+    if dictExists:
+        # Opening JSON file
+        with open(dictPath) as fp:
+            # returns JSON object as
+            # a dictionary
+            empty_files_dict = json.load(fp)
+        
+        #integrity check
+        if len(empty_files_dict) != len(mask_files):
+            dictExists = False
+            empty_files_dict = {}
+    else:
+        empty_files_dict = {}
+    
+    
+    
+    
+    for i in tqdm(range(len(image_files))):
+        
+        keep = np.random.choice([True, False], p=[keep_prob, 1 - keep_prob])
+        
+        if not dictExists:
+            image = cv2.imread(mask_files[i])
+        
+            empty_files_dict[image_files[i]] = (len(np.unique(image)) < 2)
+            
+            if (len(np.unique(image)) < 2) and (not keep):
+                #print(f"deleting image {image_files[i]} where the max is {image.max()} unique is {len(np.unique(image))} keep {keep}")
+                del image
+                continue
+            else:
+                #print(f"keeping image {image_files[i]} where the max is {image.max()} unique is {len(np.unique(image))} keep {keep}")
+                del image
+        else:
+            if (empty_files_dict[image_files[i]] == True) and (not keep):
+                continue
+        
+        new_image_files += [image_files[i]]
+        new_mask_files += [mask_files[i]]
+        if edge_files is not None:
+            new_edge_files += [edge_files[i]]
+            
+    if not dictExists:
+        with open(dictPath, "w+") as fp:
+            json.dump(empty_files_dict,fp)
+    
+    if edge_files is not None:
+        return new_image_files, new_mask_files, new_edge_files
+    
+    return new_image_files, new_mask_files  
 
 def slice_images(imgs,
                padding=200,
@@ -358,7 +611,7 @@ def plot_ime(imgs,
              columns = 2,
              figSize = (15,10),
              threshold = 0,
-             prefix = "predicted",
+             prefix = "",
              max_plots = 20):
     
     if max_plots > len(imgs):
@@ -380,15 +633,15 @@ def plot_ime(imgs,
         fig_num = fig_num + 1
         ax = fig.add_subplot(lines, columns, fig_num)
         ax.set_title(f"{prefix} mask {i}")
-        ax.imshow(mask)
+        ax.imshow(np.squeeze(mask))
         fig_num = fig_num + 1
         ax = fig.add_subplot(lines, columns, fig_num)
         ax.set_title(f"{prefix} edge mask {i}")
-        ax.imshow(edge)
+        ax.imshow(np.squeeze(edge))
         fig_num = fig_num + 1
         ax = fig.add_subplot(lines, columns, fig_num)
         ax.set_title(f"{prefix} substraction {i}")
-        ax.imshow((mask - edge) > threshold)
+        ax.imshow(np.squeeze((mask - edge) > threshold))
         
 
 #function to plot an array of images of shape (width, height, n_images)       
@@ -412,3 +665,101 @@ def scaleBetween(data ,scaledMin, scaledMax):
     res = (scaledMax-scaledMin)*(data-min)/(max-min)+scaledMin
     return res
   
+def chunks(l, n = None):
+    if n == None:
+        n = len(l) // 10
+        
+    n = max(1, n)
+    return [l[i:i+n] for i in range(0, len(l), n)]
+
+def showImg(img, title="image", figSize=(15, 20), dpi=80):
+    fig = plt.figure(figsize=figSize, dpi=dpi)
+    fig.subplots_adjust(hspace=0.3, wspace=0.3)
+    ax = fig.add_subplot(1, 1, 1)
+    ax.axis("off")
+    ax.set_title(title)
+    ax.imshow(img)
+    
+#this function takes a gray scale image and filters non connected objects by size
+def surfaceFilter(image, min_size = None, max_size = None, colorize = False, gray = False):
+    img = image.copy()
+    
+    unique_num = 2147483647
+    
+    #showImg(img, "input")
+    
+    ret, labels = cv2.connectedComponents(img)
+    
+    #(ret, labels, values, centroid) = cv2.connectedComponentsWithStats(img)
+    
+    #print(labels.dtype)
+    
+    
+    
+    label_codes = np.unique(labels)
+    
+    # print(ret)
+    
+    # print(np.unique(labels))
+    
+    #labels = np.asarray(labels) + 1
+    
+    # print(np.unique(labels))
+    
+    # showImg(labels, "lables")
+    
+    result_image = labels
+    
+    if unique_num  in result_image:
+        print(f"error the image contains the null number {unique_num}")
+    
+    i = 0
+    background_index = 0
+    max = 0
+    for label in label_codes:
+        count = (labels == label).sum()
+        
+        #find the background index
+        if count > max:
+            max = count
+            background_index = i
+        
+        
+        if min_size is not None and (count < min_size):
+            result_image[labels == label] = unique_num
+            #print(f"min: removing {count} because is < than {min_size}")
+        # else:
+        #     if min_size is not None:
+        #         print(f"min: {count} is > than {min_size}")
+        if max_size is not None and (count > max_size):
+            result_image[labels == label] = unique_num
+        #     print(f"max: removing {count} because is > than {max_size}")
+        # else:
+        #     if max_size is not None:
+        #         print(f"max: {count} is < than {max_size}")
+        
+        i = i + 1
+    
+    
+    #print(f"background index is {background_index} with count = {max}")
+    result_image[result_image == unique_num] = label_codes[background_index]
+            
+    if colorize:
+        result_image = colorize_unique(result_image)
+        
+        if gray:
+            result_image = cv2.cvtColor(result_image, cv2.COLOR_BGR2GRAY)
+    
+    #showImg(result_image, "output")
+    return result_image
+
+def colorize_unique(image):
+    # Map component labels to hue val
+    label_hue = np.uint8(179 * image / np.max(image))
+    blank_ch = 255 * np.ones_like(label_hue)
+    labeled_img = cv2.merge([label_hue, blank_ch, blank_ch])
+    labeled_img = cv2.cvtColor(labeled_img, cv2.COLOR_HSV2BGR)
+    labeled_img[label_hue == 0] = 0
+    return labeled_img
+
+

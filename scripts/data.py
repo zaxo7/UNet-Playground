@@ -502,6 +502,70 @@ def remove_empty_images(image_files, mask_files, edge_files=None, keep_prob = 0,
     
     return new_image_files, new_mask_files  
 
+def remove_empty_masks(image_files, mask_files, edge_files=None, keep_prob = 0, overwrite = False):
+        
+    new_image_files = []
+    new_mask_files = []
+    if edge_files is not None:
+        new_edge_files = []
+
+    #check the existance of dictionary of empty files
+    dictPath = '/'.join(mask_files[0].split('/')[:-2]) + '/empty_files_dict.json'
+    
+    
+    dictExists = os.path.exists(dictPath)
+    
+    if dictExists:
+        # Opening JSON file
+        with open(dictPath) as fp:
+            # returns JSON object as
+            # a dictionary
+            empty_files_dict = json.load(fp)
+        
+        #integrity check
+        if len(empty_files_dict) != len(mask_files):
+            dictExists = False
+            empty_files_dict = {}
+    else:
+        empty_files_dict = {}
+    
+    
+    
+    
+    for i in tqdm(range(len(image_files))):
+        
+        keep = np.random.choice([True, False], p=[keep_prob, 1 - keep_prob])
+        
+        if not dictExists:
+            image = cv2.imread(mask_files[i])
+        
+            empty_files_dict[image_files[i]] = (len(np.unique(image)) < 2)
+            
+            if (len(np.unique(image)) < 2) and (not keep):
+                #print(f"deleting image {image_files[i]} where the max is {image.max()} unique is {len(np.unique(image))} keep {keep}")
+                del image
+                continue
+            else:
+                #print(f"keeping image {image_files[i]} where the max is {image.max()} unique is {len(np.unique(image))} keep {keep}")
+                del image
+        else:
+            if (empty_files_dict[image_files[i]] == True) and (not keep):
+                continue
+        
+        new_image_files += [image_files[i]]
+        new_mask_files += [mask_files[i]]
+        if edge_files is not None:
+            new_edge_files += [edge_files[i]]
+            
+    if not dictExists:
+        with open(dictPath, "w+") as fp:
+            json.dump(empty_files_dict,fp)
+    
+    if edge_files is not None:
+        return new_image_files, new_mask_files, new_edge_files
+    
+    return new_image_files, new_mask_files  
+
 def slice_images(imgs,
                padding=200,
                input_size=188,

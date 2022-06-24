@@ -16,6 +16,7 @@ class DataGenerator(tf.keras.utils.Sequence):
                  augment = True,
                  shuffle = False,
                  skip_empty = False,
+                 skip_empty_mask = False,
                  keep_empty_prob = 0.05,
                  noise_prob = 0.3,
                  slice = False,
@@ -43,10 +44,20 @@ class DataGenerator(tf.keras.utils.Sequence):
         
         if skip_empty:
             print(f"skipping empty images with keep probability of {self.keep_empty_prob}\nbefore skip we have {len(self.image_files)} images")
-            if self.edge_files is not None:
-                self.image_files, self.mask_files, self.edge_files = data.remove_empty_images(self.image_files, self.mask_files, self.edge_files, keep_prob = self.keep_empty_prob)
+            
+            if skip_empty_mask:
+                if self.edge_files is not None:
+                    self.image_files, self.mask_files, self.edge_files = data.remove_empty_masks(self.image_files, self.mask_files, self.edge_files, keep_prob = self.keep_empty_prob)
+                else:
+                    self.image_files, self.mask_files = data.remove_empty_masks(self.image_files, self.mask_files, keep_prob = self.keep_empty_prob)
+                    
             else:
-                self.image_files, self.mask_files = data.remove_empty_images(self.image_files, self.mask_files, keep_prob = self.keep_empty_prob)
+                
+                if self.edge_files is not None:
+                    self.image_files, self.mask_files, self.edge_files = data.remove_empty_images(self.image_files, self.mask_files, self.edge_files, keep_prob = self.keep_empty_prob)
+                else:
+                    self.image_files, self.mask_files = data.remove_empty_images(self.image_files, self.mask_files, keep_prob = self.keep_empty_prob)
+            
             print(f"after skip we have {len(self.image_files)} images")
         
         self.n = len(self.image_files)
